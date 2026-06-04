@@ -20,6 +20,9 @@ AI agents can browse, trade, write code, call APIs, and make decisions. But when
 ## Docs
 
 - Product requirements: [`prd.md`](./prd.md)
+- Architecture: [`docs/architecture.md`](./docs/architecture.md)
+- Design system: [`docs/design-system.md`](./docs/design-system.md)
+- Demo script: [`docs/demo-script.md`](./docs/demo-script.md)
 
 ## Hackathon pitch
 

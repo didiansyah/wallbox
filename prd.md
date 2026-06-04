@@ -489,41 +489,64 @@ If direct Walrus blob immutability makes tampering impossible, simulate by verif
 
 ## 8. UX / UI Requirements
 
-Hans Labs preferred landing style:
+Wallbox must use a **Cloudflare-inspired UI/UX**, not Midday style. The product should feel like infrastructure: fast, sharp, credible, slightly technical, and enterprise-ready.
 
-- Midday.ai-inspired only.
-- White / charcoal palette.
-- Serif headlines using Georgia.
-- Black CTAs.
-- Clean split layouts.
-- Horizontal feature cards.
-- Dashboard mockup.
-- No blue/teal tints.
-- No emoji in UI; use Lucide icons.
+### Cloudflare design direction
+
+- **Visual mood:** infrastructure-grade, developer-friendly, security-focused, operational.
+- **Palette:** Cloudflare orange + warm cream + charcoal, with restrained neutral surfaces.
+- **Typography:** clean sans-serif, preferably Inter/Geist/System; avoid serif headlines for this project.
+- **Layout:** technical landing page with sharp product panels, network/grid motifs, status cards, API snippets, and verification dashboards.
+- **Hero feel:** bold infrastructure promise + product console preview.
+- **Cards:** low-radius or medium-radius cards, subtle borders, warm off-white backgrounds, orange accents.
+- **Icons:** Lucide line icons only; no emoji in UI.
+- **Motion:** subtle status pulses, certificate verification progress, network line animations; avoid playful SaaS animations.
+- **Do not use:** blue/teal tints, glossy gradients, cartoon illustrations, generic AI orb visuals, or Midday serif-heavy styling.
 
 ### Color tokens
 
 Light mode:
 
 ```css
---background: #ffffff;
---foreground: #111111;
---primary: #111111;
---primary-foreground: #ffffff;
---secondary: #f5f5f5;
---border: #e5e5e5;
---muted: #737373;
+--background: #fff7ed;          /* warm cream */
+--foreground: #111111;          /* charcoal */
+--primary: #f6821f;             /* Cloudflare orange */
+--primary-foreground: #111111;
+--secondary: #ffffff;
+--secondary-foreground: #111111;
+--accent: #faae40;              /* warm orange accent */
+--accent-foreground: #111111;
+--muted: #f5eadc;
+--muted-foreground: #6b5f55;
 --card: #ffffff;
+--card-foreground: #111111;
+--border: #eadccf;
+--ring: #f6821f;
+--success: #15803d;
+--warning: #b45309;
+--destructive: #b91c1c;
 ```
 
 Dark mode:
 
 ```css
---background: #0a0a0a;
---foreground: #ededed;
---card: #171717;
---muted: #333333;
---border: #262626;
+--background: #0f0b08;
+--foreground: #fff7ed;
+--primary: #f6821f;
+--primary-foreground: #111111;
+--secondary: #1a1410;
+--secondary-foreground: #fff7ed;
+--accent: #faae40;
+--accent-foreground: #111111;
+--muted: #241a14;
+--muted-foreground: #b8a99b;
+--card: #17110d;
+--card-foreground: #fff7ed;
+--border: #33261d;
+--ring: #f6821f;
+--success: #22c55e;
+--warning: #f59e0b;
+--destructive: #ef4444;
 ```
 
 Tailwind v4 dark mode:
@@ -531,6 +554,72 @@ Tailwind v4 dark mode:
 ```css
 @custom-variant dark (&:is(.dark *));
 ```
+
+### Cloudflare-style component patterns
+
+#### Header
+
+- Sticky top header with warm cream/white blur.
+- Left: Wallbox wordmark.
+- Center: docs/product/security/use-cases links.
+- Right: “Verify certificate” secondary button + “Run demo” orange primary button.
+- Use compact height and strong borders; feels like infra product, not lifestyle SaaS.
+
+#### Hero
+
+- Left column: headline, short copy, CTAs, small trust/status row.
+- Right column: product console preview.
+- Add subtle grid/dot network background in cream/orange/charcoal.
+- Headline example: “The black box for autonomous AI agents.”
+- Subheadline example: “Capture every prompt, tool call, source, artifact, and output into verifiable evidence stored on Walrus and certified on Sui through Tatum.”
+
+#### Product console preview
+
+Create a dark console-style panel with:
+
+- Run ID
+- Agent status
+- Capsule hash
+- Walrus blob ID
+- Sui certificate ID
+- Verification state
+- File integrity checks
+
+Use orange status chips for active steps and green only for verified/success states.
+
+#### Cards
+
+- Use `border: 1px solid var(--border)`.
+- Use warm off-white surfaces.
+- Radius: `12px` to `16px`; avoid overly rounded pill-heavy Midday look.
+- Top accents can use 2px orange border or left orange rail.
+
+#### API/code blocks
+
+- Dark charcoal background.
+- Orange highlights for keys/status.
+- Monospace font.
+- Use code examples as part of the UI story.
+
+#### Verification states
+
+- `VERIFIED`: green check line icon, green text, but keep orange/charcoal overall brand.
+- `TAMPERED`: red alert line icon.
+- `MISSING_BLOB`: amber warning.
+- `INVALID_SCHEMA`: amber warning.
+- `CERTIFICATE_NOT_FOUND`: neutral/amber.
+
+#### Background motifs
+
+Use subtle Cloudflare-like infrastructure motifs:
+
+- global edge/network map abstraction,
+- dotted grid,
+- thin connection lines,
+- request pipeline cards,
+- certificate chain cards.
+
+Keep motifs subtle; product screenshots/console panels should dominate.
 
 ### Key pages
 
@@ -1227,7 +1316,7 @@ Expected: landing page loads locally.
 
 ### Task 6.1: Build landing page
 
-**Objective:** Create Midday-style landing page for Wallbox.
+**Objective:** Create Cloudflare-inspired infrastructure landing page for Wallbox.
 
 **Files:**
 
@@ -1238,10 +1327,11 @@ Expected: landing page loads locally.
 
 **Acceptance criteria:**
 
-- Design uses white/charcoal palette.
-- No emoji in UI.
-- Headline uses serif typography.
-- CTAs are black/charcoal.
+- Design uses Cloudflare-inspired orange/cream/charcoal palette.
+- No emoji in UI; use Lucide line icons only.
+- Headline uses clean sans-serif typography, not serif.
+- CTAs use orange primary + charcoal/white secondary styling.
+- Include infrastructure motifs: grid, edge/network lines, status cards, and console preview.
 
 ---
 
