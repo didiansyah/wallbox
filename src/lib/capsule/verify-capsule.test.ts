@@ -15,4 +15,14 @@ describe("capsule verification", () => {
     expect(result.status).toBe("TAMPERED");
     expect(result.fileChecks.some((f) => f.status === "MISMATCH")).toBe(true);
   });
+
+  it("detects extra artifacts that were not in the original manifest", () => {
+    const capsule = buildCapsule(runDemoAgent("run_test_003"));
+    capsule.artifacts["secret_extra.md"] = "this file was inserted after certification";
+    const result = verifyCapsule(capsule);
+    expect(result.status).toBe("TAMPERED");
+    expect(result.fileChecks).toContainEqual(
+      expect.objectContaining({ path: "artifacts/secret_extra.md", status: "EXTRA" }),
+    );
+  });
 });
