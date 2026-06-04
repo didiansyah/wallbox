@@ -1516,7 +1516,540 @@ Mitigation:
 
 ---
 
-## 20. Final Recommendation
+
+## 20. Hackathon MVP Cutline
+
+This section defines the hard execution boundary. Wallbox should win by being focused, verifiable, and demoable — not by having the largest surface area.
+
+### Must ship
+
+- Deterministic demo agent that always produces a stable trace and report.
+- Canonical audit capsule builder with reproducible SHA-256 hashing.
+- Local verification engine that detects tampering.
+- Walrus upload/fetch for one canonical JSON audit bundle.
+- Sui/Tatum certificate that anchors `capsule_hash` and `walrus_blob_id`.
+- Public verification page showing on-chain hash vs recomputed hash.
+- Cloudflare-inspired landing page and product console preview.
+- README, `.env.example`, architecture doc, design system doc, and 2–3 minute demo script.
+
+### Cut if running out of time
+
+- Custom Move package if raw Tatum/Sui transaction metadata is faster.
+- Real LLM provider integration.
+- Full capsule detail page.
+- Dark mode polish.
+- Complex dashboard analytics.
+- Streaming traces.
+- Encryption/Seal integration.
+- SDK package publishing.
+- Auth, teams, billing, or database migrations.
+
+### Absolute demo priority
+
+If time is tight, prioritize this exact path:
+
+```txt
+Run demo agent → Build capsule → Upload to Walrus → Anchor certificate via Tatum/Sui → Verify page → Tamper failure
+```
+
+Everything else is secondary.
+
+---
+
+## 21. Demo Scoring Playbook
+
+### What judges must see in the demo
+
+1. Wallbox solves a real agent accountability problem, not generic file storage.
+2. Walrus stores the full audit evidence bundle.
+3. Sui stores the public certificate/hash anchor.
+4. Tatum is used to access Sui RPC/tools.
+5. Verification works without trusting the Wallbox backend.
+6. Tampering changes the recomputed hash and fails verification.
+
+### How to pitch
+
+Use this framing:
+
+> Most AI agent projects focus on memory. Wallbox focuses on accountability. We give every autonomous agent a black box: evidence on Walrus, certificate on Sui, accessed through Tatum.
+
+### What not to say
+
+- Do not say Wallbox proves the agent was correct.
+- Do not say Wallbox prevents all fraud.
+- Do not describe it as a logging dashboard.
+- Do not spend too much time on generic AI agent memory.
+- Do not hide fallback/mocked components if used; explain the interface honestly.
+
+### Score maximization checklist
+
+- **Walrus + Tatum:** show actual blob ID and Sui certificate/tx/object ID.
+- **Technical quality:** show canonical hash recomputation and file-level checks.
+- **Creativity:** contrast against obvious AI memory / NFT storage / social app ideas.
+- **Presentation:** keep demo under 3 minutes with one strong tamper-proof moment.
+
+---
+
+## 22. Fallback Architecture
+
+The production target is real Walrus + real Sui/Tatum integration. Because hackathon timelines are short, the code should support graceful fallback modes without changing the UI or data model.
+
+### Mode A: Full integration
+
+```txt
+Real demo agent → real capsule → real Walrus blob → real Sui/Tatum certificate → real verification
+```
+
+Use this for final submission if possible.
+
+### Mode B: Real Walrus, mocked Sui certificate
+
+Use when Sui signing/package deployment is blocked.
+
+- Upload capsule to Walrus for real.
+- Store a local mock certificate with the same shape as the future Sui object.
+- UI must label it clearly as local certificate mode.
+- README must explain that Tatum/Sui code path is implemented but not live if true.
+
+### Mode C: Mocked Walrus, real Sui/Tatum certificate
+
+Use when Walrus publisher access is blocked.
+
+- Store capsule locally using the same `WalrusClient` interface.
+- Create real Sui certificate through Tatum.
+- UI labels blob source as local/mock.
+- Verification still demonstrates hash anchoring.
+
+### Mode D: Fully local demo
+
+Only acceptable as last resort for development video, not ideal for final hackathon scoring.
+
+- Local blob store.
+- Local certificate store.
+- Same API and UI shape as full integration.
+- Must be clearly labeled in README.
+
+### Implementation rule
+
+Use interfaces so swapping modes is a config change:
+
+```ts
+type BlobStoreMode = "walrus" | "local";
+type CertificateMode = "sui-tatum" | "local";
+```
+
+---
+
+## 23. Tatum Integration Details
+
+### Required env vars
+
+```bash
+TATUM_API_KEY=
+TATUM_SUI_RPC_URL=
+SUI_NETWORK=testnet
+SUI_PRIVATE_KEY=
+SUI_PACKAGE_ID=
+```
+
+### RPC usage
+
+Wallbox should route Sui reads/writes through Tatum. The client wrapper should make JSON-RPC calls and attach the Tatum API key according to Tatum dashboard docs.
+
+Core JSON-RPC methods to support:
+
+- `sui_getObject` — read certificate object fields.
+- `sui_getTransactionBlock` — show transaction details and status.
+- `sui_executeTransactionBlock` — submit signed transaction if using custom Move certificate.
+- Optional: `sui_getEvents` — locate `CertificateCreated` events.
+
+### Minimum visible Tatum proof
+
+The UI/demo should show:
+
+- Sui network name.
+- Tatum RPC status.
+- Sui transaction digest or object ID.
+- Raw certificate fields read back through the Tatum client.
+
+### Tatum MCP optional angle
+
+If MCP is available in time, add an AI verifier step:
+
+> “Use Tatum MCP to inspect this Sui certificate and tell me whether the Walrus capsule hash matches.”
+
+This is optional. Do not block MVP on MCP.
+
+---
+
+## 24. Walrus Integration Details
+
+### Required env vars
+
+```bash
+WALRUS_PUBLISHER_URL=
+WALRUS_AGGREGATOR_URL=
+WALRUS_NETWORK=testnet
+```
+
+### MVP storage format
+
+Lock the MVP to a single canonical JSON bundle, not ZIP/tar.
+
+```json
+{
+  "manifest": {},
+  "trace": [],
+  "sources": [],
+  "verdict": {},
+  "artifacts": {
+    "final_report.md": "..."
+  }
+}
+```
+
+### Upload flow
+
+1. Build canonical audit bundle.
+2. Compute `capsule_hash` before upload.
+3. Upload JSON bundle to Walrus publisher.
+4. Parse returned `walrus_blob_id` / blob identifier.
+5. Store blob ID in local run record.
+6. Anchor blob ID + capsule hash on Sui.
+
+### Fetch flow
+
+1. Read `walrus_blob_id` from Sui certificate.
+2. Fetch blob from Walrus aggregator.
+3. Parse JSON bundle.
+4. Recompute hash.
+5. Compare with Sui certificate hash.
+
+### Retry/backoff
+
+Walrus reads may briefly return 404 after upload depending on aggregator/CDN propagation.
+
+Use:
+
+- 3 retry attempts,
+- 1s / 2s / 4s backoff,
+- clear UI state: “Waiting for Walrus availability.”
+
+### Storage lifecycle
+
+For MVP, use the shortest safe testnet duration. Future versions should include:
+
+- expiry monitor,
+- renewal reminders,
+- shared blob extension,
+- cost estimator,
+- `MISSING_BLOB` verification state when certificate exists but blob is unavailable.
+
+---
+
+## 25. Security, Privacy & Redaction
+
+Walrus blobs are public by default. Wallbox must avoid storing secrets in public audit capsules.
+
+### MVP privacy rules
+
+- Never store API keys, private keys, cookies, bearer tokens, or raw credentials.
+- Store hashes and short previews for sensitive prompts or private documents.
+- Redact environment variables and request headers.
+- Store source URLs and content hashes instead of full private content.
+- Warn users that demo capsules are public if uploaded to public Walrus endpoints.
+
+### Future privacy roadmap
+
+- Client-side redaction policy.
+- Encrypted capsules using Seal.
+- Role-based private audit rooms.
+- Time-limited access grants.
+- Enterprise retention policies.
+
+---
+
+## 26. Threat Model & Trust Boundaries
+
+### Wallbox protects against
+
+- Centralized log tampering after a run is finalized.
+- Artifact modification after certificate creation.
+- Fake source/artifact claims when hashes do not match.
+- Hidden prompt/policy drift after a certified run.
+- Disputes over whether a specific evidence bundle existed at a specific time.
+
+### Wallbox does not protect against in MVP
+
+- A compromised backend before hashing/certification.
+- An agent that lies before the recorder captures evidence.
+- Hidden tool calls executed outside the Wallbox recorder.
+- False or low-quality sources that were honestly recorded.
+- Model reasoning correctness.
+- Private data leakage if users upload secrets.
+
+### Certificate trust model
+
+A Wallbox certificate proves:
+
+- a specific wallet/backend anchored a specific capsule hash,
+- the certificate points to a specific Walrus blob ID,
+- the capsule fetched later matches or does not match the anchored hash,
+- the evidence bundle was not modified after anchoring if verification passes.
+
+A Wallbox certificate does **not** prove:
+
+- the agent was correct,
+- the agent was unbiased,
+- every real-world action was captured,
+- the creator wallet is trustworthy,
+- sources are true.
+
+Use wording: **integrity verified**, not **truth verified**.
+
+---
+
+## 27. Error Handling Matrix
+
+| Error | API status | UI state | Demo handling |
+|---|---:|---|---|
+| Missing Tatum env var | 500 | Setup required | Show setup card |
+| Missing Walrus env var | 500 | Setup required | Use local mode only if configured |
+| Walrus upload failed | 502 | Upload failed | Retry once, then show fallback |
+| Walrus fetch 404 | 404 | `MISSING_BLOB` | Retry with backoff |
+| Tatum RPC failed | 502 | Certificate unavailable | Show raw error summary |
+| Sui object not found | 404 | `CERTIFICATE_NOT_FOUND` | Ask user to check ID |
+| Invalid capsule JSON | 422 | `INVALID_SCHEMA` | Show schema error |
+| Hash mismatch | 200 | `TAMPERED` | Highlight changed files |
+| Local run not found | 404 | Run not found | Link back to run demo |
+| Malformed certificate | 422 | Invalid certificate | Show expected fields |
+
+Telegram/GitHub markdown does not render tables everywhere; README may convert this to bullet groups if needed.
+
+---
+
+## 28. UI Wireframes & States
+
+### Landing hero
+
+```txt
+[Header]
+Wallbox        Product  Security  Docs  Use cases        Verify certificate [Run demo]
+
+[Left]
+The black box for autonomous AI agents.
+Capture every prompt, tool call, source, artifact, and output into verifiable evidence.
+[Run demo agent] [Verify certificate]
+Status: Walrus storage + Sui certificate + Tatum RPC
+
+[Right]
+Dark console panel:
+RUN wallbox_20260604_001
+AGENT RiskLens Demo Agent
+CAPSULE 0xabc...
+WALRUS blob_...
+SUI 0x...
+STATUS VERIFIED
+```
+
+### Run page state machine UI
+
+Each step is a horizontal Cloudflare-style status card:
+
+1. Agent running
+2. Capsule building
+3. Walrus uploading
+4. Sui certifying
+5. Verification ready
+
+### Verify page hierarchy
+
+1. Large status card: `VERIFIED` / `TAMPERED` / error.
+2. Certificate summary: Sui object/tx, creator, timestamp.
+3. Hash comparison: on-chain vs recomputed.
+4. Walrus reference: blob ID, network, fetch status.
+5. File integrity checklist.
+6. Artifact preview.
+
+### Empty/loading/error states
+
+- Loading: “Checking certificate and fetching Walrus capsule…”
+- Empty: “Paste a Sui certificate ID to verify.”
+- Setup error: “Tatum/Walrus configuration missing.”
+- Tampered: “The evidence bundle no longer matches the Sui certificate.”
+
+---
+
+## 29. State Machine
+
+```txt
+CREATED
+→ AGENT_RUNNING
+→ AGENT_COMPLETED
+→ CAPSULE_BUILDING
+→ CAPSULE_BUILT
+→ WALRUS_UPLOADING
+→ WALRUS_UPLOADED
+→ SUI_CERTIFYING
+→ SUI_CERTIFIED
+→ VERIFYING
+→ VERIFIED
+```
+
+Failure states:
+
+```txt
+AGENT_FAILED
+CAPSULE_FAILED
+WALRUS_FAILED
+SUI_FAILED
+VERIFY_FAILED
+TAMPERED
+MISSING_BLOB
+INVALID_SCHEMA
+CERTIFICATE_NOT_FOUND
+```
+
+The frontend should treat all states as displayable. Do not collapse failures into a generic error.
+
+---
+
+## 30. Competitive Positioning
+
+### LangSmith / agent tracing tools
+
+Strong for debugging and observability, but centralized. Wallbox adds public, tamper-evident evidence anchoring via Walrus + Sui.
+
+### Helicone / LLM observability
+
+Strong for LLM request logs and analytics. Wallbox focuses on verifiable audit capsules for agent runs, not just LLM call monitoring.
+
+### OpenTelemetry
+
+Great for distributed traces. Wallbox is not a replacement; it can consume OpenTelemetry-style traces and produce a verifiable certificate.
+
+### IPFS / regular decentralized storage
+
+Can store files, but Wallbox adds a productized agent audit schema, verification workflow, and Sui certificate layer.
+
+### Generic AI memory projects
+
+They help agents remember. Wallbox helps humans verify and audit what agents did.
+
+---
+
+## 31. SDK / API Future Shape
+
+Wallbox should eventually become a lightweight SDK for agent frameworks.
+
+```ts
+import { Wallbox } from "@wallbox/sdk";
+
+const wallbox = new Wallbox({
+  apiKey: process.env.WALLBOX_API_KEY,
+  agentId: "research-agent",
+});
+
+const run = await wallbox.startRun({
+  task: "Analyze this DeFi strategy",
+  metadata: { model: "gpt-5.5" },
+});
+
+await run.recordToolCall({
+  name: "fetch_market_data",
+  input: { symbol: "SUI" },
+  output: { price: "..." },
+});
+
+await run.attachArtifact("final_report.md", markdownReport);
+
+const certificate = await run.finalizeAndCertify();
+console.log(certificate.verifyUrl);
+```
+
+This SDK is future scope, but the MVP API should be shaped so this is easy later.
+
+---
+
+## 32. Deployment Plan
+
+### Local-first hackathon plan
+
+The fastest path is a single Next.js app with API routes:
+
+```txt
+Frontend + API: Next.js
+Storage: local JSON + Walrus
+Chain: Tatum/Sui client
+```
+
+### VPS plan if deploying under HANS Labs
+
+Suggested allocation:
+
+- Project path: `/root/wallbox`
+- Frontend/API port: `3070`
+- PM2 name: `wallbox`
+- Optional domain: `wallbox.hanslabs.xyz`
+- Reverse proxy: Nginx → `localhost:3070`
+
+PM2 convention:
+
+```bash
+PM2_HOME=/root/.pm2 pm2 start npm --name wallbox -- start
+PM2_HOME=/root/.pm2 pm2 save
+```
+
+### Vercel caveat
+
+Vercel is fine for frontend, but private key signing and long-running network calls may be easier on the VPS. If using Vercel, do not expose Sui private keys client-side.
+
+---
+
+## 33. Submission Checklist
+
+### Repository
+
+- `README.md` explains product, setup, architecture, and demo.
+- `.env.example` includes Tatum, Walrus, Sui, and app vars.
+- `prd.md` is complete.
+- `docs/design-system.md` documents Cloudflare-inspired UI.
+- `docs/demo-script.md` gives 2–3 minute script.
+- Code is committed and pushed.
+
+### Demo
+
+- Landing page loads.
+- Run demo agent works.
+- Walrus blob ID appears.
+- Sui certificate/tx/object ID appears.
+- Verify page shows hash comparison.
+- Tamper demo fails verification.
+- Tatum usage is visible and explained.
+
+### Submission form
+
+- GitHub repo URL.
+- Live app URL if deployed.
+- 2–3 minute demo video URL.
+- Short description: “Verifiable flight recorder for autonomous AI agents.”
+- Mention Walrus + Sui + Tatum clearly.
+
+### Social bonus
+
+Post on X/LinkedIn tagging:
+
+- `@Tatum_io`
+- `@WalrusFoundation`
+- `@SuiNetwork`
+
+Suggested post:
+
+> We built Wallbox for the Tatum x Walrus hackathon — a verifiable black box for autonomous AI agents. It stores agent audit capsules on Walrus and anchors certificates on Sui through Tatum, so anyone can verify whether an agent run was tampered with.
+
+---
+
+## 34. Final Recommendation
 
 Build Wallbox as a tight, high-signal hackathon MVP:
 
