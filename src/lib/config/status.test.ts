@@ -25,8 +25,31 @@ describe("integrationStatus", () => {
       const status = integrationStatus();
       expect(status.blob).toMatchObject({ mode: "local", ready: true });
       expect(status.certificate).toMatchObject({ mode: "local", ready: true });
+      expect(status.certificate.tatumRpcConfigured).toBe(false);
       expect(status.warnings).toContain("Blob storage is running in local fallback mode, not live Walrus.");
     });
+  });
+
+  it("surfaces configured Tatum credentials while staying in local certificate mode", () => {
+    withEnv(
+      {
+        WALLBOX_BLOB_STORE_MODE: "local",
+        WALLBOX_CERTIFICATE_MODE: "local",
+        TATUM_API_KEY: "test-key",
+        TATUM_SUI_RPC_URL: "https://example.test",
+        SUI_PRIVATE_KEY: "suiprivkey_test",
+      },
+      () => {
+        const status = integrationStatus();
+        expect(status.certificate).toMatchObject({
+          mode: "local",
+          ready: true,
+          tatumRpcConfigured: true,
+          signerConfigured: true,
+          packageConfigured: false,
+        });
+      },
+    );
   });
 
   it("reports missing live integration variables", () => {

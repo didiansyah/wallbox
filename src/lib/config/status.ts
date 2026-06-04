@@ -13,6 +13,9 @@ export type IntegrationStatus = {
     network: string;
     ready: boolean;
     missing: string[];
+    tatumRpcConfigured: boolean;
+    signerConfigured: boolean;
+    packageConfigured: boolean;
     movePackagePresent: boolean;
   };
   warnings: string[];
@@ -30,6 +33,9 @@ export function integrationStatus(): IntegrationStatus {
     certMode === "sui-tatum"
       ? missing(["TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID"])
       : [];
+  const tatumRpcConfigured = missing(["TATUM_API_KEY", "TATUM_SUI_RPC_URL"]).length === 0;
+  const signerConfigured = missing(["SUI_PRIVATE_KEY"]).length === 0;
+  const packageConfigured = missing(["SUI_PACKAGE_ID"]).length === 0;
 
   const warnings: string[] = [];
   if (blobMode === "local") warnings.push("Blob storage is running in local fallback mode, not live Walrus.");
@@ -50,6 +56,9 @@ export function integrationStatus(): IntegrationStatus {
       network: process.env.SUI_NETWORK || (certMode === "local" ? "local-demo" : "testnet"),
       ready: certMissing.length === 0,
       missing: certMissing,
+      tatumRpcConfigured,
+      signerConfigured,
+      packageConfigured,
       movePackagePresent: true,
     },
     warnings,

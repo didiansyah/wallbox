@@ -37,6 +37,11 @@ export default function StatusPage() {
             network={status.certificate.network}
             ready={status.certificate.ready}
             missing={status.certificate.missing}
+            extraRows={[
+              ["Tatum RPC", status.certificate.tatumRpcConfigured ? "configured" : "missing"],
+              ["Sui signer", status.certificate.signerConfigured ? "configured" : "missing"],
+              ["Move package", status.certificate.packageConfigured ? "configured" : "not deployed/configured"],
+            ]}
           />
         </div>
 
@@ -69,7 +74,21 @@ export default function StatusPage() {
   );
 }
 
-function StatusCard({ title, mode, network, ready, missing }: { title: string; mode: string; network: string; ready: boolean; missing: string[] }) {
+function StatusCard({
+  title,
+  mode,
+  network,
+  ready,
+  missing,
+  extraRows = [],
+}: {
+  title: string;
+  mode: string;
+  network: string;
+  ready: boolean;
+  missing: string[];
+  extraRows?: [string, string][];
+}) {
   return (
     <section className="rounded-2xl border border-border bg-card p-6">
       <div className="flex items-start justify-between gap-3">
@@ -84,6 +103,9 @@ function StatusCard({ title, mode, network, ready, missing }: { title: string; m
       <div className="mt-5 space-y-3 text-sm">
         <Row label="Network" value={network} />
         <Row label="Missing" value={missing.length ? missing.join(", ") : "none"} />
+        {extraRows.map(([label, value]) => (
+          <Row key={label} label={label} value={value} />
+        ))}
       </div>
     </section>
   );

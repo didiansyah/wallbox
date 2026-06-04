@@ -102,7 +102,7 @@ export async function createCertificate(input: {
       throw new Error("SUI_PACKAGE_ID and SUI_PRIVATE_KEY are required for sui-tatum certificate creation");
     }
 
-    await tatumRpc("sui_getLatestSuiSystemState", []);
+    await tatumRpc("sui_getTotalTransactionBlocks", []);
     throw new Error(
       "Sui transaction signing is not configured yet. Deploy move/wallbox and wire create_certificate signing, or set WALLBOX_CERTIFICATE_MODE=local for demo mode.",
     );
