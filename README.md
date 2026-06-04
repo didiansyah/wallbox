@@ -10,8 +10,10 @@ Wallbox records every AI agent run as a tamper-evident audit capsule, stores the
 - Canonical audit capsule builder with reproducible SHA-256 hashing
 - Local/Walrus blob store abstraction
 - Local/Sui-Tatum certificate abstraction
+- Sui Move certificate package scaffold in `move/wallbox`
+- Tatum `sui_getObject` certificate parser with tests
 - Public verification API and page
-- Tamper demo that changes local capsule evidence and shows `TAMPERED`
+- One-click tamper demo that changes local capsule evidence and shows `TAMPERED`
 - Cloudflare-inspired orange/cream/charcoal UI
 
 ## Quick start
@@ -31,7 +33,7 @@ Open `http://localhost:3070`.
 3. Wallbox creates a trace, builds an audit capsule, stores a blob reference, and creates a certificate reference.
 4. Open the returned verifier URL.
 5. The verifier compares the anchored capsule hash with the recomputed capsule hash.
-6. Call the tamper endpoint and open the tampered verifier URL:
+6. Click `Simulate tampering` in the UI, or call the tamper endpoint manually:
 
 ```bash
 curl -X POST http://localhost:3070/api/demo/tamper/<run_id>
@@ -62,6 +64,15 @@ SUI_PACKAGE_ID=
 ```
 
 Local mode is clearly labeled in API/UI responses. It uses the same data model and interfaces as the real integrations, but does not claim to be an on-chain certificate or real Walrus blob.
+
+## Sui Move package
+
+The intended certificate object lives in `move/wallbox`:
+
+- `Move.toml`
+- `sources/certificate.move`
+
+It defines `AgentRunCertificate` and `CertificateCreated`. Build/deploy requires the Sui CLI plus a funded testnet/devnet wallet; this VPS currently does not have `sui` installed.
 
 ## API
 
