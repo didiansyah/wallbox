@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Header } from "@/components/landing/header";
+import { Footer } from "@/components/landing/footer";
 import { RunPanel } from "@/components/dashboard/run-panel";
 
 export default function RunPage() {
@@ -12,6 +13,7 @@ export default function RunPage() {
           <RunPanel />
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

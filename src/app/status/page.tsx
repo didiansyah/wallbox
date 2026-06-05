@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Header } from "@/components/landing/header";
+import { Footer } from "@/components/landing/footer";
 import { integrationStatus } from "@/lib/config/status";
 
 export default function StatusPage() {
@@ -15,13 +16,21 @@ export default function StatusPage() {
             <div>
               <p className="wall-kicker">Integration readiness</p>
               <h1 className="mt-3 text-5xl font-normal tracking-[-.055em] text-[#e7eaeb] md:text-7xl">Wallbox status</h1>
-              <p className="wall-copy mt-4">Check whether this deployment is running local fallback mode or live Walrus + Sui/Tatum testnet mode.</p>
+              <p className="wall-copy mt-4">Current storage and certificate mode for this deployment.</p>
             </div>
             <Link className="wall-button wall-button-primary" href="/run">Run demo</Link>
           </div>
 
-          <div className="grid gap-px border border-[#292f31] bg-[#292f31] lg:grid-cols-2">
+          <div className="grid gap-px border border-[#292f31] bg-[#292f31] lg:grid-cols-3">
             <StatusCard title="Evidence storage" mode={status.blob.mode === "walrus" ? "Walrus live" : "Local fallback"} network={status.blob.network} ready={status.blob.ready} missing={status.blob.missing} />
+            <StatusCard
+              title="Capture API"
+              mode={status.captureApi.authConfigured ? "Key protected" : "Dev open"}
+              network="HTTP"
+              ready={status.captureApi.authConfigured}
+              missing={status.captureApi.authConfigured ? [] : ["WALLBOX_API_KEY"]}
+              extraRows={[["Auth", status.captureApi.authConfigured ? "x-wallbox-api-key / bearer" : "required before public exposure"]]}
+            />
             <StatusCard
               title="Certificate anchor"
               mode={status.certificate.mode === "sui-tatum" ? "Sui/Tatum live" : "Local fallback"}
@@ -41,7 +50,7 @@ export default function StatusPage() {
               <div>
                 <h2 className="wall-kicker">Submission readiness</h2>
                 <p className="mt-3 text-sm text-[#b8bdbf]">
-                  {fullLive ? "Full live testnet mode is configured. Demo can show real Walrus and Sui/Tatum references." : "Current deployment is demo-safe but not full live mode yet. Add keys/API later and switch env modes."}
+                  {fullLive ? "Live testnet storage and certificate anchoring are configured." : "Fallback mode is active. Live storage or certificate configuration is missing."}
                 </p>
               </div>
               <span className={fullLive ? "wall-status" : "wall-fig text-[#febb55]"}>{fullLive ? "Full live testnet" : "Fallback active"}</span>
@@ -54,6 +63,7 @@ export default function StatusPage() {
           </section>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

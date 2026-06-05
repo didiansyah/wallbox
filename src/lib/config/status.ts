@@ -1,7 +1,11 @@
+import { wallboxApiAuthConfigured } from "@/lib/config/api-auth";
 import { blobStoreMode, certificateMode, isMainnetDisabled } from "@/lib/config/env";
 
 export type IntegrationStatus = {
   appUrl: string;
+  captureApi: {
+    authConfigured: boolean;
+  };
   blob: {
     mode: "walrus" | "local";
     network: string;
@@ -43,6 +47,7 @@ export function integrationStatus(): IntegrationStatus {
   const packageConfigured = missing(["SUI_PACKAGE_ID"]).length === 0;
 
   const warnings: string[] = [];
+  if (!wallboxApiAuthConfigured()) warnings.push("External capture API key is not configured. Set WALLBOX_API_KEY before exposing /api/runs publicly.");
   if (blobMode === "local") warnings.push("Blob storage is running in local fallback mode, not live Walrus.");
   if (certMode === "local") warnings.push("Certificate anchoring is running in local fallback mode, not live Sui/Tatum.");
   if (blobMissing.length) warnings.push(`Walrus mode is selected but missing: ${blobMissing.join(", ")}.`);
@@ -51,6 +56,9 @@ export function integrationStatus(): IntegrationStatus {
 
   return {
     appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3070",
+    captureApi: {
+      authConfigured: wallboxApiAuthConfigured(),
+    },
     blob: {
       mode: blobMode,
       network: walrusNetwork,

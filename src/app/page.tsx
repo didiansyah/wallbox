@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Cpu, FileSearch, LockKeyhole, Network, RadioTower, Server, ShieldCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2, Cpu, FileSearch, LockKeyhole, Network, Server, ShieldCheck } from "lucide-react";
 import { Header } from "@/components/landing/header";
+import { Footer } from "@/components/landing/footer";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { HowItWorks } from "@/components/landing/how-it-works";
 
 const featureCards = [
-  { title: "Deterministic recorder", icon: Cpu, body: "A predictable RiskLens agent run captures the task, policy, tool trace, sources, verdict, and report output." },
+  { title: "Bring your own agent", icon: Cpu, body: "External agents can submit traces and artifacts through the capture API while Wallbox handles capsules, storage, certificates, and verification." },
   { title: "Walrus evidence store", icon: Server, body: "Full audit capsules are stored as public testnet blobs, not just media or metadata placeholders." },
   { title: "Sui certificate anchor", icon: ShieldCheck, body: "A Move object stores the run ID, blob ID, schema, and capsule hash for independent verification." },
   { title: "Public verifier", icon: FileSearch, body: "Anyone can fetch the certificate, retrieve the capsule, recompute hashes, and detect tampering." },
@@ -31,6 +32,7 @@ export default function Home() {
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link href="/run" className="wall-button wall-button-primary">Run demo agent <ArrowRight size={15} /></Link>
+              <Link href="/integrations" className="wall-button">Connect your agent</Link>
               <Link href="/verify/local-demo" className="wall-button">Verify certificate</Link>
             </div>
             <div className="mt-10 grid max-w-2xl gap-px border border-[#292f31] bg-[#292f31] sm:grid-cols-3">
@@ -47,7 +49,6 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="absolute -right-8 -top-10 hidden text-[#00d497]/20 lg:block"><RadioTower size={160} /></div>
             <DashboardPreview />
             <div className="mt-3 flex justify-between text-[10px] uppercase tracking-[.14em] text-[#4d5558] wall-mono">
               <span>FIG. 01 Wallbox verifier</span>
@@ -81,7 +82,7 @@ export default function Home() {
       <section className="wall-section border-y border-border bg-[#080f11]">
         <div className="wall-container">
           <div className="mb-12 max-w-4xl">
-            <p className="wall-kicker">Integrated platform</p>
+            <p className="wall-kicker">Evidence stack</p>
             <h2 className="wall-h2 mt-4">Recorder, storage, certificate, verifier. <span className="muted">One chain of custody.</span></h2>
           </div>
           <div className="grid gap-px border border-[#292f31] bg-[#292f31] md:grid-cols-2 lg:grid-cols-4">
@@ -102,7 +103,7 @@ export default function Home() {
       <section id="use-cases" className="wall-section border-b border-border bg-[#0a1113]">
         <div className="wall-container grid gap-10 lg:grid-cols-[.85fr_1.15fr]">
           <div>
-            <p className="wall-kicker">Purpose built for frontier workloads</p>
+            <p className="wall-kicker">Use cases</p>
             <h2 className="wall-h2 mt-4">Audit trails for agents that touch real work.</h2>
           </div>
           <div className="grid gap-px border border-[#292f31] bg-[#292f31] sm:grid-cols-2">
@@ -116,26 +117,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="docs" className="wall-section bg-[#080f11]">
-        <div className="wall-container">
-          <div className="wall-panel grid gap-8 p-8 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
-            <div>
-              <p className="wall-kicker">Submit ready</p>
-              <h2 className="wall-h2 mt-4">Production demo on testnet. <span className="muted">Mainnet later.</span></h2>
-              <p className="wall-copy mt-6">Current deployment uses real Walrus testnet blobs and real Sui testnet certificates. Mainnet stays locked until funding, monitoring, and ops ownership are ready.</p>
-            </div>
-            <div>
-              <div className="wall-led-bars mb-6" aria-hidden="true">
-                {Array.from({ length: 18 }).map((_, i) => <span key={i} style={{ height: `${10 + ((i * 23) % 70)}px` }} />)}
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-                <Link href="/status" className="wall-button">Check status</Link>
-                <Link href="/run" className="wall-button wall-button-primary">Run live test</Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Footer />
     </main>
   );
 }

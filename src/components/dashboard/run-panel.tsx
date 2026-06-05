@@ -80,7 +80,21 @@ export function RunPanel() {
         </button>
       </div>
 
-      <div className="mt-6 grid gap-px border border-[#292f31] bg-[#292f31] md:grid-cols-5">
+          <div className="mt-6 grid gap-px border border-[#292f31] bg-[#292f31] md:grid-cols-2">
+            <div className="bg-[#0d1316] p-5">
+              <p className="wall-kicker">Demo mode</p>
+              <h2 className="mt-3 text-2xl font-normal tracking-[-.03em] text-[#e7eaeb]">Hosted RiskLens agent</h2>
+              <p className="mt-3 text-sm leading-6 text-[#7e8385]">Use this run to prove the Wallbox evidence path end to end: capsule, Walrus blob, Sui certificate, verifier, and tamper case.</p>
+            </div>
+            <div className="bg-[#0d1316] p-5">
+              <p className="wall-kicker">External mode</p>
+              <h2 className="mt-3 text-2xl font-normal tracking-[-.03em] text-[#e7eaeb]">Bring your own agent</h2>
+              <p className="mt-3 text-sm leading-6 text-[#7e8385]">Post your own trace, sources, and artifacts to <code className="text-[#00d497]">POST /api/runs</code> with <code className="text-[#00d497]">mode: external</code>.</p>
+              <Link href="/integrations" className="wall-button mt-5">View integration spec</Link>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-px border border-[#292f31] bg-[#292f31] md:grid-cols-5">
         {steps.map(([num, label, Icon], i) => (
           <div key={label} className={`bg-[#0d1316] p-4 ${run || loading ? "text-[#e7eaeb]" : "text-[#7e8385]"}`}>
             <div className="mb-8 flex items-center justify-between">

@@ -3,6 +3,8 @@ import { integrationStatus } from "./status";
 
 function withEnv(env: Record<string, string | undefined>, fn: () => void) {
   const original = { ...process.env };
+  vi.stubEnv("WALLBOX_API_KEY", env.WALLBOX_API_KEY);
+  vi.stubEnv("WALLBOX_API_KEYS", env.WALLBOX_API_KEYS);
   vi.stubEnv("WALLBOX_BLOB_STORE_MODE", env.WALLBOX_BLOB_STORE_MODE);
   vi.stubEnv("WALLBOX_CERTIFICATE_MODE", env.WALLBOX_CERTIFICATE_MODE);
   vi.stubEnv("WALRUS_PUBLISHER_URL", env.WALRUS_PUBLISHER_URL);
@@ -14,7 +16,7 @@ function withEnv(env: Record<string, string | undefined>, fn: () => void) {
   vi.stubEnv("SUI_NETWORK", env.SUI_NETWORK);
   vi.stubEnv("WALRUS_NETWORK", env.WALRUS_NETWORK);
   vi.stubEnv("WALLBOX_ALLOW_MAINNET", env.WALLBOX_ALLOW_MAINNET);
-  for (const key of ["TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID", "SUI_NETWORK", "WALRUS_NETWORK", "WALLBOX_ALLOW_MAINNET"] as const) {
+  for (const key of ["WALLBOX_API_KEY", "WALLBOX_API_KEYS", "TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID", "SUI_NETWORK", "WALRUS_NETWORK", "WALLBOX_ALLOW_MAINNET"] as const) {
     if (env[key] === undefined) vi.stubEnv(key, "");
   }
   try {
@@ -31,6 +33,7 @@ describe("integrationStatus", () => {
       const status = integrationStatus();
       expect(status.blob).toMatchObject({ mode: "local", ready: true });
       expect(status.certificate).toMatchObject({ mode: "local", ready: true });
+      expect(status.captureApi.authConfigured).toBe(false);
       expect(status.certificate.tatumRpcConfigured).toBe(false);
       expect(status.warnings).toContain("Blob storage is running in local fallback mode, not live Walrus.");
     });

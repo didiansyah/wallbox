@@ -196,14 +196,21 @@ export async function readCertificate(certificateId: string): Promise<WallboxCer
     return (record?.certificate as WallboxCertificate) || null;
   }
 
+  const localRecord = await findRunByCertificate(certificateId);
+  const localCertificate = localRecord?.certificate as WallboxCertificate | undefined;
+
+  // Tx digests are not Sui object IDs. If the verifier is opened by tx digest and
+  // this node has the run record, use the stored certificate object directly.
+  if (localRecord?.run?.suiTxDigest === certificateId && localCertificate) return localCertificate;
+
   if (certificateMode() === "sui-tatum" && !certificateId.startsWith("local-sui-")) {
     assertTestnetFirst(process.env.SUI_NETWORK || "testnet", "Sui/Tatum");
     const raw = await tatumRpc("sui_getObject", [certificateId, { showContent: true }]);
-    return parseSuiCertificateObject(raw, certificateId);
+    const parsed = parseSuiCertificateObject(raw, certificateId);
+    return localCertificate ? { ...parsed, txDigest: localCertificate.txDigest } : parsed;
   }
 
-  const record = await findRunByCertificate(certificateId);
-  return (record?.certificate as WallboxCertificate) || null;
+  return localCertificate || null;
 }
 
 function recordlessId(runId: string) {

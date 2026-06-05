@@ -16,8 +16,8 @@ export function Header() {
         <nav className="wall-nav hidden items-center gap-7 text-[12px] uppercase tracking-[.12em] text-[#9aa2a5] lg:flex">
           <a className="transition hover:text-[#e7eaeb]" href="/#product">Product</a>
           <a className="transition hover:text-[#e7eaeb]" href="/#security">Security</a>
+          <Link className="transition hover:text-[#e7eaeb]" href="/integrations">Integrations</Link>
           <Link className="transition hover:text-[#e7eaeb]" href="/status">Status</Link>
-          <a className="transition hover:text-[#e7eaeb]" href="/#docs">Docs</a>
           <a className="transition hover:text-[#e7eaeb]" href="/#use-cases">Use cases</a>
         </nav>
 

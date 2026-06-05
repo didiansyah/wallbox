@@ -17,7 +17,7 @@ export function HowItWorks() {
             <h2 className="wall-h2 mt-4">From agent run <span className="muted">to verifiable evidence.</span></h2>
           </div>
           <p className="wall-copy lg:justify-self-end">
-            Wallbox turns agent execution into a chain of custody: trace, capsule, blob, certificate, verifier. Every screen should feel like infrastructure, not a generic audit log.
+            Wallbox turns an agent run into a chain of custody: trace, capsule, blob, certificate, verifier.
           </p>
         </div>
 

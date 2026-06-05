@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { Header } from "@/components/landing/header";
+import { Footer } from "@/components/landing/footer";
 import { CertificateSearch } from "@/components/verification/certificate-search";
 import { VerificationCard } from "@/components/verification/verification-card";
 
@@ -42,6 +43,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ certifi
           <VerificationCard data={data} />
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

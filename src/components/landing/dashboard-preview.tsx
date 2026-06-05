@@ -1,4 +1,4 @@
-import { CheckCircle2, Database, FileCheck2, KeyRound, RadioTower } from "lucide-react";
+import { CheckCircle2, Database, FileCheck2, KeyRound } from "lucide-react";
 import { shortHash } from "@/lib/capsule/hash";
 
 const hash = "0xb8a7624d9f3c80aa9ed21e114adfc26bb7d44cd5a3d782fa9081b1cb1ab3027e";
@@ -13,7 +13,6 @@ export function DashboardPreview() {
 
   return (
     <div className="wall-panel relative overflow-hidden p-4">
-      <div className="absolute right-5 top-5 opacity-30"><RadioTower className="text-[#00d497]" size={72} /></div>
       <div className="mb-4 flex items-center justify-between border-b border-[#292f31] pb-3">
         <div>
           <p className="wall-kicker">FIG. 01 / Verification console</p>
