@@ -103,8 +103,23 @@ function digest(value: string) {
   return createHash("sha256").update(value).digest();
 }
 
-function keyHash(value: string) {
+export function wallboxKeyHash(value: string) {
   return createHash("sha256").update(value).digest("hex").slice(0, 16);
+}
+
+export function maskWallboxKey(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.length <= 10) return `${trimmed.slice(0, 3)}…${trimmed.slice(-2)}`;
+  return `${trimmed.slice(0, 6)}…${trimmed.slice(-4)}`;
+}
+
+export function wallboxMaskedProjectKeys() {
+  return wallboxProjectKeys().map(({ key, ...entry }) => ({
+    ...entry,
+    keyHash: wallboxKeyHash(key),
+    maskedKey: maskWallboxKey(key),
+  }));
 }
 
 export function wallboxAuthContext(request: Pick<Request, "headers">): WallboxAuthContext | null {
@@ -120,7 +135,7 @@ export function wallboxAuthContext(request: Pick<Request, "headers">): WallboxAu
   const tokenDigest = digest(token);
   for (const projectKey of keys) {
     if (timingSafeEqual(tokenDigest, digest(projectKey.key))) {
-      return { projectId: projectKey.projectId, projectName: projectKey.projectName, keyHash: keyHash(projectKey.key) };
+      return { projectId: projectKey.projectId, projectName: projectKey.projectName, keyHash: wallboxKeyHash(projectKey.key) };
     }
   }
 
