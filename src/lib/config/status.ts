@@ -1,10 +1,11 @@
-import { wallboxApiAuthConfigured } from "@/lib/config/api-auth";
+import { wallboxApiAuthConfigured, wallboxProjectCount } from "@/lib/config/api-auth";
 import { blobStoreMode, certificateMode, isMainnetDisabled } from "@/lib/config/env";
 
 export type IntegrationStatus = {
   appUrl: string;
   captureApi: {
     authConfigured: boolean;
+    projectCount: number;
   };
   blob: {
     mode: "walrus" | "local";
@@ -58,6 +59,7 @@ export function integrationStatus(): IntegrationStatus {
     appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3070",
     captureApi: {
       authConfigured: wallboxApiAuthConfigured(),
+      projectCount: wallboxProjectCount(),
     },
     blob: {
       mode: blobMode,

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { externalApiAuthErrorMessage, isWallboxApiAuthorized, wallboxApiAuthConfigured, wallboxApiKeys } from "@/lib/config/api-auth";
+import { externalApiAuthErrorMessage, isWallboxApiAuthorized, wallboxApiAuthConfigured, wallboxApiKeys, wallboxAuthContext, wallboxProjectCount, wallboxProjectKeys } from "@/lib/config/api-auth";
 
 function req(headers: Record<string, string> = {}) {
   return { headers: new Headers(headers) } as Pick<Request, "headers">;
@@ -34,6 +34,21 @@ describe("Wallbox API auth", () => {
 
     expect(wallboxApiKeys()).toEqual(["old_key", "new_key"]);
     expect(isWallboxApiAuthorized(req({ authorization: "Bearer new_key" }))).toBe(true);
+  });
+
+  it("maps API keys to projects", () => {
+    delete process.env.WALLBOX_API_KEY;
+    process.env.WALLBOX_API_KEYS = "agenthub=wbx_agenthub, meridian|Meridian Bot|wbx_meridian";
+
+    expect(wallboxProjectKeys()).toMatchObject([
+      { projectId: "agenthub", projectName: "Agenthub", key: "wbx_agenthub" },
+      { projectId: "meridian", projectName: "Meridian Bot", key: "wbx_meridian" },
+    ]);
+    expect(wallboxProjectCount()).toBe(2);
+    expect(wallboxAuthContext(req({ "x-wallbox-api-key": "wbx_meridian" }))).toMatchObject({
+      projectId: "meridian",
+      projectName: "Meridian Bot",
+    });
   });
 
   it("allows missing keys only outside production", () => {

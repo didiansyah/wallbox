@@ -29,6 +29,22 @@ describe("WallboxClient", () => {
     expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({ mode: "external", task: "Audit decision" });
   });
 
+  it("lists runs with project API key auth when configured", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const client = new WallboxClient({
+      baseUrl: "https://wallbox.test",
+      apiKey: "wbx_project",
+      fetch: (async (url, init) => {
+        calls.push({ url: String(url), init });
+        return jsonResponse({ runs: [], count: 0, project_id: "agenthub" });
+      }) as typeof fetch,
+    });
+
+    await expect(client.listRuns(25)).resolves.toMatchObject({ project_id: "agenthub" });
+    expect(calls[0].url).toBe("https://wallbox.test/api/runs?limit=25");
+    expect((calls[0].init?.headers as Record<string, string>)["x-wallbox-api-key"]).toBe("wbx_project");
+  });
+
   it("verifies certificate IDs", async () => {
     const client = new WallboxClient({
       baseUrl: "https://wallbox.test",

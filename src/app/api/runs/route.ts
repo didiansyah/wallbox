@@ -6,13 +6,16 @@ import { ExternalRunSchema, externalRunToPayload } from "@/lib/agent/external-ru
 import { listRuns, saveRun } from "@/lib/storage/local-store";
 import { uploadCapsule } from "@/lib/walrus/client";
 import { createCertificate } from "@/lib/sui/certificate";
-import { externalApiAuthErrorMessage, isWallboxApiAuthorized } from "@/lib/config/api-auth";
+import { externalApiAuthErrorMessage, wallboxAuthContext } from "@/lib/config/api-auth";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const limit = Number(url.searchParams.get("limit") || "100");
-  const runs = await listRuns(Number.isFinite(limit) ? limit : 100);
-  return NextResponse.json({ runs, count: runs.length });
+  const auth = wallboxAuthContext(request);
+  const explicitProjectId = url.searchParams.get("project_id") || undefined;
+  const projectId = auth?.projectId || explicitProjectId;
+  const runs = await listRuns(Number.isFinite(limit) ? limit : 100, { projectId });
+  return NextResponse.json({ runs, count: runs.length, project_id: projectId || "all" });
 }
 
 export async function POST(request: Request) {
@@ -21,7 +24,8 @@ export async function POST(request: Request) {
     const generatedRunId = createRunId();
     const isExternal = body.mode === "external" || body.agent || body.trace || body.artifacts;
 
-    if (isExternal && !isWallboxApiAuthorized(request)) {
+    const auth = wallboxAuthContext(request);
+    if (isExternal && !auth) {
       return NextResponse.json({ status: "UNAUTHORIZED", error: externalApiAuthErrorMessage() }, { status: 401 });
     }
 
@@ -48,6 +52,8 @@ export async function POST(request: Request) {
       taskHash:sha256String(task),
       agentId:capsule.manifest.agent.id,
       agentName:capsule.manifest.agent.name,
+      projectId:auth?.projectId || "demo",
+      projectName:auth?.projectName || "Demo",
       capsuleHash:capsule.manifest.capsule_hash,
       walrusBlobId:walrus.blobId,
       suiCertificateId:certificate.certificateId,
@@ -68,6 +74,8 @@ export async function POST(request: Request) {
       blob_mode:run.blobMode,
       certificate_mode:run.certificateMode,
       integration_mode:isExternal ? "external" : "demo",
+      project_id:run.projectId,
+      project_name:run.projectName,
       verify_url:`/verify/${run.suiCertificateId}`,
       capsule_url:`/capsules/${resolvedRunId}`,
     });

@@ -55,9 +55,12 @@ export class WallboxClient {
     return this.request<WallboxRun & Record<string, unknown>>(`/api/runs/${encodeURIComponent(runId)}`);
   }
 
-  async listRuns(limit = 100): Promise<ListRunsResponse> {
+  async listRuns(limit = 100, options: RequestOptions = {}): Promise<ListRunsResponse> {
     const params = new URLSearchParams({ limit: String(limit) });
-    return this.request<ListRunsResponse>(`/api/runs?${params.toString()}`);
+    const apiKey = options.apiKey ?? this.apiKey;
+    return this.request<ListRunsResponse>(`/api/runs?${params.toString()}`, {
+      headers: apiKey ? { "x-wallbox-api-key": apiKey } : undefined,
+    });
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {

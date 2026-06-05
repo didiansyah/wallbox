@@ -12,6 +12,6 @@ export declare class WallboxClient {
     captureRun(input: CaptureRunInput, options?: RequestOptions): Promise<CaptureRunResponse>;
     verifyCertificate(certificateId: string): Promise<VerifyCertificateResponse>;
     getRun(runId: string): Promise<WallboxRun & Record<string, unknown>>;
-    listRuns(limit?: number): Promise<ListRunsResponse>;
+    listRuns(limit?: number, options?: RequestOptions): Promise<ListRunsResponse>;
     private request;
 }

@@ -34,6 +34,7 @@ describe("integrationStatus", () => {
       expect(status.blob).toMatchObject({ mode: "local", ready: true });
       expect(status.certificate).toMatchObject({ mode: "local", ready: true });
       expect(status.captureApi.authConfigured).toBe(false);
+      expect(status.captureApi.projectCount).toBe(0);
       expect(status.certificate.tatumRpcConfigured).toBe(false);
       expect(status.warnings).toContain("Blob storage is running in local fallback mode, not live Walrus.");
     });

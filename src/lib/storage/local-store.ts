@@ -19,6 +19,8 @@ export type WallboxRun = {
   taskHash: string;
   agentId: string;
   agentName: string;
+  projectId?: string;
+  projectName?: string;
   capsuleHash?: string;
   walrusBlobId?: string;
   suiCertificateId?: string;
@@ -37,7 +39,7 @@ export type StoredRun = {
   certificate?: unknown;
 };
 
-const DEFAULT_STORAGE_DIR = "/root/wallbox/data/runs";
+const DEFAULT_STORAGE_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), "data", "runs");
 
 function storageDir() {
   const configured = process.env.WALLBOX_STORAGE_DIR;
@@ -76,7 +78,15 @@ export async function loadRun(runId: string): Promise<StoredRun | null> {
   }
 }
 
-export async function listRuns(limit = 100): Promise<WallboxRun[]> {
+function normalizeRun(run: WallboxRun): WallboxRun {
+  return {
+    ...run,
+    projectId: run.projectId || "legacy",
+    projectName: run.projectName || "Legacy",
+  };
+}
+
+export async function listRuns(limit = 100, filters: { projectId?: string } = {}): Promise<WallboxRun[]> {
   await ensureDir();
   const files = await fs.readdir(storageDir());
   const runs: WallboxRun[] = [];
@@ -85,7 +95,10 @@ export async function listRuns(limit = 100): Promise<WallboxRun[]> {
     if (!file.endsWith(".json")) continue;
     try {
       const record = JSON.parse(await fs.readFile(path.join(storageDir(), file), "utf8")) as StoredRun;
-      if (record.run?.runId) runs.push(record.run);
+      if (record.run?.runId) {
+        const run = normalizeRun(record.run);
+        if (!filters.projectId || run.projectId === filters.projectId) runs.push(run);
+      }
     } catch {
       // Ignore malformed local records so the dashboard still loads.
     }

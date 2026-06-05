@@ -99,12 +99,15 @@ response = requests.post(
 response.raise_for_status()
 print(response.json()["verify_url"])`;
 
-const mcpSnippet = `// Planned MCP server shape
-wallbox_start_run({ task, agent, model })
-wallbox_log_event({ run_id, trace_entry })
-wallbox_log_artifact({ run_id, path, content })
-wallbox_finalize_run({ run_id })
-wallbox_verify_certificate({ certificate_id })`;
+const mcpSnippet = `# Hermes / MCP stdio server
+WALLBOX_BASE_URL=https://wallbox.hanslabs.xyz
+WALLBOX_API_KEY=wbx_project_key
+
+wallbox_capture_run({ task, agent, trace, sources, artifacts })
+wallbox_list_runs({ limit: 25 })
+wallbox_get_run({ run_id })
+wallbox_verify_certificate({ certificate_id })
+wallbox_status({})`;
 
 const modes = [
   {
@@ -115,7 +118,7 @@ const modes = [
   {
     label: "02",
     title: "MCP connector",
-    body: "Optional for MCP-native agents. Wallbox becomes a tool server for start, log, finalize, and verify calls. Not required for every user.",
+    body: "Optional for MCP-native agents. Wallbox is available as a stdio tool server for capture, list, get, status, and verify calls.",
   },
   {
     label: "03",
@@ -130,6 +133,7 @@ const responseFields = [
   ["walrus_blob_id", "Evidence capsule blob location."],
   ["sui_certificate_id", "Sui object ID used by public verification."],
   ["sui_tx_digest", "Transaction digest for chain explorer lookup."],
+  ["project_id", "Project attached to the API key that submitted the run."],
   ["verify_url", "Public verifier route for the submitted evidence."],
 ];
 
@@ -201,7 +205,7 @@ export default function IntegrationsPage() {
             <div className="wall-panel p-6">
               <p className="wall-kicker">Direct HTTP</p>
               <h3 className="mt-4 text-3xl font-normal tracking-[-.04em] text-[#e7eaeb]">No runtime dependency.</h3>
-              <p className="mt-4 text-sm leading-6 text-[#7e8385]">Use this from any backend. Keep the API key server-side; never ship it in browser code.</p>
+              <p className="mt-4 text-sm leading-6 text-[#7e8385]">Use this from any backend. Keep the API key server-side; project keys automatically label and scope submitted runs.</p>
               <CopyCode label="fetch post" code={apiSnippet} />
             </div>
 
@@ -233,7 +237,7 @@ export default function IntegrationsPage() {
           <div className="wall-panel p-6">
             <p className="wall-kicker">MCP roadmap</p>
             <h2 className="wall-h2 mt-4">Connector, not a dependency.</h2>
-            <p className="wall-copy mt-5">MCP is useful when the user already runs an MCP-capable agent. Wallbox should keep API-first capture as the universal path and expose MCP as a thin wrapper later.</p>
+            <p className="wall-copy mt-5">MCP is useful when the user already runs an MCP-capable agent. Wallbox now exposes a stdio server that wraps the same capture, list, get, status, and verify API.</p>
             <CopyCode label="mcp tools" code={mcpSnippet} maxHeight={360} />
           </div>
 

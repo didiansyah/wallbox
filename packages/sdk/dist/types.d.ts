@@ -62,6 +62,8 @@ export type CaptureRunResponse = {
     blob_mode: "walrus" | "local" | string;
     certificate_mode: "sui-tatum" | "local" | string;
     integration_mode: "external" | "demo" | string;
+    project_id?: string;
+    project_name?: string;
     verify_url: string;
     capsule_url: string;
 };
@@ -72,6 +74,8 @@ export type WallboxRun = {
     taskHash: string;
     agentId: string;
     agentName: string;
+    projectId?: string;
+    projectName?: string;
     capsuleHash?: string;
     walrusBlobId?: string;
     suiCertificateId?: string;
@@ -85,6 +89,7 @@ export type WallboxRun = {
 export type ListRunsResponse = {
     runs: WallboxRun[];
     count: number;
+    project_id?: string;
 };
 export type VerifyCertificateResponse = {
     status: "VERIFIED" | "TAMPERED" | "INVALID_SCHEMA" | "MISSING_BLOB" | "CERTIFICATE_NOT_FOUND" | string;

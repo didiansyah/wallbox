@@ -43,6 +43,7 @@ export default async function RunsPage() {
   const verified = runs.filter((run) => run.status === "VERIFIED").length;
   const liveWalrus = runs.filter((run) => run.blobMode === "walrus").length;
   const liveSui = runs.filter((run) => run.certificateMode === "sui-tatum").length;
+  const projects = new Set(runs.map((run) => run.projectId || "demo")).size;
 
   return (
     <main className="wall-shell">
@@ -61,11 +62,12 @@ export default async function RunsPage() {
             </div>
           </div>
 
-          <div className="mb-5 grid gap-px border border-[#292f31] bg-[#292f31] md:grid-cols-4">
+          <div className="mb-5 grid gap-px border border-[#292f31] bg-[#292f31] md:grid-cols-5">
             <Metric label="Total runs" value={String(runs.length)} />
             <Metric label="Verified" value={String(verified)} />
             <Metric label="Walrus live" value={String(liveWalrus)} />
             <Metric label="Sui live" value={String(liveSui)} />
+            <Metric label="Projects" value={String(projects)} />
           </div>
 
           {runs.length === 0 ? (
@@ -80,8 +82,9 @@ export default async function RunsPage() {
             </section>
           ) : (
             <section className="border border-[#292f31] bg-[#101618]">
-              <div className="hidden grid-cols-[1.1fr_.75fr_.55fr_.7fr_.8fr] gap-px border-b border-[#292f31] bg-[#292f31] text-[10px] uppercase tracking-[.14em] text-[#7e8385] wall-mono lg:grid">
+              <div className="hidden grid-cols-[1.1fr_.65fr_.75fr_.55fr_.7fr_.8fr] gap-px border-b border-[#292f31] bg-[#292f31] text-[10px] uppercase tracking-[.14em] text-[#7e8385] wall-mono lg:grid">
                 <HeaderCell>Run</HeaderCell>
+                <HeaderCell>Project</HeaderCell>
                 <HeaderCell>Agent</HeaderCell>
                 <HeaderCell>Status</HeaderCell>
                 <HeaderCell>Created</HeaderCell>
@@ -89,10 +92,14 @@ export default async function RunsPage() {
               </div>
               <div className="grid gap-px bg-[#292f31]">
                 {runs.map((run) => (
-                  <article key={run.runId} className="grid gap-4 bg-[#0d1316] p-5 lg:grid-cols-[1.1fr_.75fr_.55fr_.7fr_.8fr] lg:items-center lg:gap-px">
+                  <article key={run.runId} className="grid gap-4 bg-[#0d1316] p-5 lg:grid-cols-[1.1fr_.65fr_.75fr_.55fr_.7fr_.8fr] lg:items-center lg:gap-px">
                     <div>
                       <p className="wall-mono break-all text-xs text-[#e7eaeb]">{run.runId}</p>
                       <p className="mt-2 break-all font-mono text-[11px] text-[#7e8385]">{short(run.capsuleHash, 18, 10)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-[#e7eaeb]">{run.projectName || "Demo"}</p>
+                      <p className="mt-2 font-mono text-[11px] text-[#7e8385]">{run.projectId || "demo"}</p>
                     </div>
                     <div>
                       <p className="text-sm text-[#e7eaeb]">{run.agentName}</p>

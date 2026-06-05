@@ -44,3 +44,13 @@ console.log(verification.status);
 ```
 
 Keep `WALLBOX_API_KEY` server-side. Do not ship it in browser code.
+
+## Project-scoped keys
+
+Wallbox can map API keys to projects at the server level:
+
+```bash
+WALLBOX_API_KEYS="agenthub=wbx_agenthub, meridian|Meridian Bot|wbx_meridian"
+```
+
+Runs submitted with a project key are stored with `project_id` and `project_name`; authenticated `listRuns()` calls are scoped to that project. Raw keys without metadata still work and map to the default project.
