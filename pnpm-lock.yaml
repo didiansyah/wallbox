@@ -46,6 +46,8 @@ importers:
         specifier: latest
         version: 4.1.8(@types/node@25.9.1)(vite@8.0.16(@types/node@25.9.1)(jiti@2.7.0))
 
+  packages/sdk: {}
+
 packages:
 
   '@alloc/quick-lru@5.2.0':
