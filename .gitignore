@@ -5,5 +5,7 @@ node_modules
 .DS_Store
 *.log
 data/runs/*.json
+data/*.sqlite
+data/*.sqlite-*
 !.gitkeep
 move/**/build/
