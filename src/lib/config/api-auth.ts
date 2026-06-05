@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from "crypto";
+import { authenticateStoredProjectKey, listStoredProjectKeys, projectCount as storedProjectCount } from "@/lib/storage/project-store";
 
 export type WallboxProjectKey = {
   projectId: string;
@@ -16,7 +17,7 @@ export type WallboxAuthContext = {
 const DEFAULT_PROJECT_ID = "default";
 const DEFAULT_PROJECT_NAME = "Default project";
 
-function normalizeProjectId(value: string) {
+export function normalizeWallboxProjectId(value: string) {
   const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_.:-]+/g, "-").replace(/^-+|-+$/g, "");
   return normalized || DEFAULT_PROJECT_ID;
 }
@@ -41,7 +42,7 @@ function parseProjectKey(entry: string, source: WallboxProjectKey["source"]): Wa
   //   project_id|Project Name|key -> project-scoped key with display name
   const pipe = value.split("|");
   if (pipe.length >= 3) {
-    const projectId = normalizeProjectId(pipe[0] || DEFAULT_PROJECT_ID);
+    const projectId = normalizeWallboxProjectId(pipe[0] || DEFAULT_PROJECT_ID);
     const projectName = (pipe[1] || humanizeProjectName(projectId)).trim();
     const key = pipe.slice(2).join("|").trim();
     return key ? { projectId, projectName, key, source } : null;
@@ -52,7 +53,7 @@ function parseProjectKey(entry: string, source: WallboxProjectKey["source"]): Wa
     const [projectRaw, ...keyParts] = value.split(separator);
     const key = keyParts.join(separator).trim();
     if (projectRaw && key) {
-      const projectId = normalizeProjectId(projectRaw);
+      const projectId = normalizeWallboxProjectId(projectRaw);
       return { projectId, projectName: humanizeProjectName(projectId), key, source };
     }
   }
@@ -60,7 +61,7 @@ function parseProjectKey(entry: string, source: WallboxProjectKey["source"]): Wa
   return { projectId: DEFAULT_PROJECT_ID, projectName: DEFAULT_PROJECT_NAME, key: value, source };
 }
 
-export function wallboxProjectKeys(): WallboxProjectKey[] {
+export function wallboxProjectKeysFromEnv(): WallboxProjectKey[] {
   const entries: WallboxProjectKey[] = [];
 
   if (process.env.WALLBOX_API_KEY) {
@@ -78,16 +79,20 @@ export function wallboxProjectKeys(): WallboxProjectKey[] {
   return entries;
 }
 
+export function wallboxProjectKeys(): WallboxProjectKey[] {
+  return wallboxProjectKeysFromEnv();
+}
+
 export function wallboxApiKeys() {
-  return wallboxProjectKeys().map((entry) => entry.key);
+  return wallboxProjectKeysFromEnv().map((entry) => entry.key);
 }
 
 export function wallboxProjectCount() {
-  return new Set(wallboxProjectKeys().map((entry) => entry.projectId)).size;
+  return storedProjectCount();
 }
 
 export function wallboxApiAuthConfigured() {
-  return wallboxProjectKeys().length > 0;
+  return wallboxProjectKeysFromEnv().length > 0 || listStoredProjectKeys().length > 0;
 }
 
 function tokenFromRequest(request: Pick<Request, "headers">) {
@@ -115,7 +120,7 @@ export function maskWallboxKey(value: string) {
 }
 
 export function wallboxMaskedProjectKeys() {
-  return wallboxProjectKeys().map(({ key, ...entry }) => ({
+  return wallboxProjectKeysFromEnv().map(({ key, ...entry }) => ({
     ...entry,
     keyHash: wallboxKeyHash(key),
     maskedKey: maskWallboxKey(key),
@@ -123,13 +128,21 @@ export function wallboxMaskedProjectKeys() {
 }
 
 export function wallboxAuthContext(request: Pick<Request, "headers">): WallboxAuthContext | null {
-  const keys = wallboxProjectKeys();
+  const keys = wallboxProjectKeysFromEnv();
+  const token = tokenFromRequest(request);
+
+  if (token) {
+    const storedKey = authenticateStoredProjectKey(token);
+    if (storedKey) {
+      return { projectId: storedKey.projectId, projectName: storedKey.projectName, keyHash: wallboxKeyHash(token) };
+    }
+  }
+
   if (keys.length === 0) {
     if (process.env.NODE_ENV === "production") return null;
     return { projectId: DEFAULT_PROJECT_ID, projectName: DEFAULT_PROJECT_NAME, keyHash: "dev-no-key" };
   }
 
-  const token = tokenFromRequest(request);
   if (!token) return null;
 
   const tokenDigest = digest(token);

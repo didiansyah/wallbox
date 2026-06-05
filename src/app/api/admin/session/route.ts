@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     httpOnly: true,
     sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
-    path: "/admin",
+    path: "/",
     maxAge: 60 * 60 * 6,
   });
   return response;
@@ -26,7 +26,7 @@ export async function DELETE(request: Request) {
     httpOnly: true,
     sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
-    path: "/admin",
+    path: "/",
     maxAge: 0,
   });
   return response;
