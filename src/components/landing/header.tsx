@@ -1,3 +1,33 @@
 import Link from "next/link";
 import { Box, ShieldCheck } from "lucide-react";
-export function Header() { return <header className="sticky top-0 z-50 border-b border-border/80 bg-background/85 backdrop-blur"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5"><Link href="/" className="flex items-center gap-2 font-semibold"><span className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground"><Box size={18}/></span>Wallbox</Link><nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex"><a href="/#product">Product</a><a href="/#security">Security</a><Link href="/status">Status</Link><a href="/#docs">Docs</a><a href="/#use-cases">Use cases</a></nav><div className="flex gap-2"><Link className="hidden rounded-md border border-border bg-secondary px-4 py-2 text-sm font-medium sm:block" href="/verify/local-demo">Verify certificate</Link><Link className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" href="/run"><span className="inline-flex items-center gap-2"><ShieldCheck size={16}/>Run demo</span></Link></div></div></header> }
+
+export function Header() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-border bg-[#080f11]/90 backdrop-blur-xl">
+      <div className="wall-container flex h-16 items-center justify-between">
+        <Link href="/" className="group flex items-center gap-3">
+          <span className="relative grid size-8 place-items-center border border-[#236a4c] bg-[#003931] text-[#00d497]">
+            <Box size={17} />
+            <span className="absolute -right-1 -top-1 size-2 bg-[#00d497] shadow-[0_0_16px_#00d497]" />
+          </span>
+          <span className="wall-nav text-sm font-medium uppercase tracking-[.14em] text-[#e7eaeb]">Wallbox</span>
+        </Link>
+
+        <nav className="wall-nav hidden items-center gap-7 text-[12px] uppercase tracking-[.12em] text-[#9aa2a5] lg:flex">
+          <a className="transition hover:text-[#e7eaeb]" href="/#product">Product</a>
+          <a className="transition hover:text-[#e7eaeb]" href="/#security">Security</a>
+          <Link className="transition hover:text-[#e7eaeb]" href="/status">Status</Link>
+          <a className="transition hover:text-[#e7eaeb]" href="/#docs">Docs</a>
+          <a className="transition hover:text-[#e7eaeb]" href="/#use-cases">Use cases</a>
+        </nav>
+
+        <div className="flex gap-2">
+          <Link className="wall-button hidden sm:inline-flex" href="/verify/local-demo">Verify</Link>
+          <Link className="wall-button wall-button-primary" href="/run">
+            <ShieldCheck size={15} /> Run demo
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}

@@ -13,42 +13,17 @@ type VerificationData = {
   capsule?: { artifacts?: Record<string, string> };
 };
 
-const baseMessages: Record<string, [string, string, typeof CheckCircle2, string]> = {
-  VERIFIED: [
-    "text-green-700",
-    "bg-green-50 border-green-200",
-    CheckCircle2,
-    "Integrity verified. The audit capsule matches the certificate hash.",
-  ],
-  TAMPERED: [
-    "text-red-700",
-    "bg-red-50 border-red-200",
-    XCircle,
-    "Verification failed. The capsule contents no longer match the anchored hash.",
-  ],
-  MISSING_BLOB: [
-    "text-amber-700",
-    "bg-amber-50 border-amber-200",
-    AlertTriangle,
-    "The certificate exists, but the referenced evidence blob could not be fetched.",
-  ],
-  INVALID_SCHEMA: [
-    "text-amber-700",
-    "bg-amber-50 border-amber-200",
-    AlertTriangle,
-    "The capsule does not match the Wallbox audit schema.",
-  ],
-  CERTIFICATE_NOT_FOUND: [
-    "text-amber-700",
-    "bg-amber-50 border-amber-200",
-    AlertTriangle,
-    "No certificate was found for this identifier.",
-  ],
+const baseMessages: Record<string, [string, typeof CheckCircle2, string]> = {
+  VERIFIED: ["#00d497", CheckCircle2, "Integrity verified. The audit capsule matches the certificate hash."],
+  TAMPERED: ["#ff6785", XCircle, "Verification failed. The capsule contents no longer match the anchored hash."],
+  MISSING_BLOB: ["#febb55", AlertTriangle, "The certificate exists, but the referenced evidence blob could not be fetched."],
+  INVALID_SCHEMA: ["#febb55", AlertTriangle, "The capsule does not match the Wallbox audit schema."],
+  CERTIFICATE_NOT_FOUND: ["#febb55", AlertTriangle, "No certificate was found for this identifier."],
 };
 
 function modeCopy(data: VerificationData) {
-  const blob = data.mode?.blob === "walrus" ? "Walrus live" : "local evidence fallback";
-  const certificate = data.mode?.certificate === "sui-tatum" ? "Sui/Tatum live" : "local certificate fallback";
+  const blob = data.mode?.blob === "walrus" ? "Walrus testnet" : "local evidence fallback";
+  const certificate = data.mode?.certificate === "sui-tatum" ? "Sui/Tatum testnet" : "local certificate fallback";
   return `${blob} · ${certificate}`;
 }
 
@@ -58,30 +33,28 @@ function hashLabel(data: VerificationData) {
 
 export function VerificationCard({ data }: { data: VerificationData }) {
   const s = baseMessages[data.status] || baseMessages.INVALID_SCHEMA;
-  const Icon = s[2];
+  const Icon = s[1];
   const isLocal = data.mode?.blob === "local" || data.mode?.certificate === "local";
 
   return (
     <div className="grid gap-5">
-      <section className={`rounded-2xl border p-6 ${s[1]}`}>
+      <section className="wall-panel p-6">
         <div className="flex items-start gap-4">
-          <Icon className={s[0]} size={32} />
+          <div className="grid size-12 shrink-0 place-items-center border" style={{ borderColor: s[0], color: s[0], background: `${s[0]}1A` }}>
+            <Icon size={28} />
+          </div>
           <div>
-            <p className={`text-sm font-semibold uppercase tracking-[.2em] ${s[0]}`}>{data.status}</p>
-            <h1 className="mt-2 text-3xl font-semibold text-[#111111]">Certificate verification</h1>
-            <p className="mt-2 max-w-3xl text-[#4a3d34]">{s[3]}</p>
-            {isLocal && (
-              <p className="mt-3 inline-flex rounded-full border border-[#faae40]/40 bg-[#fff7ed] px-3 py-1 text-xs font-semibold text-[#8a4b0f]">
-                Local demo mode: same verification interface, fallback storage/certificate.
-              </p>
-            )}
+            <p className="wall-kicker" style={{ color: s[0] }}>{data.status}</p>
+            <h1 className="mt-2 text-4xl font-normal tracking-[-.045em] text-[#e7eaeb]">Certificate verification</h1>
+            <p className="mt-3 max-w-3xl text-[#b8bdbf]">{s[2]}</p>
+            {isLocal && <p className="wall-fig mt-4 text-[#febb55]">Local demo mode: fallback storage/certificate</p>}
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-semibold">Hash comparison</h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <section className="wall-panel p-6">
+        <h2 className="wall-kicker">Hash comparison</h2>
+        <div className="mt-4 grid gap-px border border-[#292f31] bg-[#292f31] md:grid-cols-2">
           <Field k={hashLabel(data)} v={data.onchain_capsule_hash || data.error || "missing"} />
           <Field k="Recomputed hash" v={data.recomputed_capsule_hash || "not available"} />
           <Field k="Evidence blob" v={data.walrus_blob_id || "not available"} />
@@ -90,23 +63,23 @@ export function VerificationCard({ data }: { data: VerificationData }) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="flex items-center gap-2 font-semibold"><FileCheck2 size={18} className="text-primary" />File integrity checklist</h2>
-        <div className="mt-4 grid gap-2">
+      <section className="wall-panel p-6">
+        <h2 className="wall-kicker flex items-center gap-2"><FileCheck2 size={17} />File integrity checklist</h2>
+        <div className="mt-4 grid gap-px border border-[#292f31] bg-[#292f31]">
           {(data.files || []).map((f) => (
-            <div key={f.path} className="flex flex-col justify-between gap-2 rounded-xl border border-border bg-secondary p-3 text-sm md:flex-row">
-              <span>{f.path}</span>
-              <span className={f.status === "OK" ? "text-green-700" : "text-red-700"}>{f.status}</span>
+            <div key={f.path} className="flex flex-col justify-between gap-2 bg-[#0d1316] p-3 text-sm md:flex-row">
+              <span className="text-[#b8bdbf]">{f.path}</span>
+              <span className={f.status === "OK" ? "wall-mono text-[#00d497]" : "wall-mono text-[#ff6785]"}>{f.status}</span>
             </div>
           ))}
-          {!data.files?.length && <p className="text-sm text-muted-foreground">No file checks available.</p>}
+          {!data.files?.length && <p className="bg-[#0d1316] p-4 text-sm text-[#7e8385]">No file checks available.</p>}
         </div>
       </section>
 
       {data.capsule?.artifacts?.["final_report.md"] && (
-        <section className="rounded-2xl border border-border bg-[#111111] p-6 text-[#fff7ed]">
-          <h2 className="font-semibold">Artifact preview</h2>
-          <pre className="mt-4 max-h-[420px] overflow-auto whitespace-pre-wrap text-sm leading-6 text-white/75">
+        <section className="wall-panel p-6">
+          <h2 className="wall-kicker">Artifact preview</h2>
+          <pre className="mt-4 max-h-[420px] overflow-auto whitespace-pre-wrap border border-[#292f31] bg-[#080f11] p-4 text-sm leading-6 text-[#b8bdbf]">
             {data.capsule.artifacts["final_report.md"]}
           </pre>
         </section>
@@ -117,9 +90,9 @@ export function VerificationCard({ data }: { data: VerificationData }) {
 
 function Field({ k, v }: { k: string; v: string }) {
   return (
-    <div>
-      <p className="text-xs uppercase tracking-[.16em] text-primary">{k}</p>
-      <p className="break-all font-mono text-sm text-muted-foreground">{v}</p>
+    <div className="bg-[#0d1316] p-4">
+      <p className="wall-mono text-[10px] uppercase tracking-[.14em] text-[#00d497]">{k}</p>
+      <p className="mt-2 break-all font-mono text-xs leading-5 text-[#b8bdbf]">{v}</p>
     </div>
   );
 }

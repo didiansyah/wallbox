@@ -16,14 +16,14 @@ export function CertificateSearch({ initialValue = "" }: { initialValue?: string
   }
 
   return (
-    <form onSubmit={submit} className="flex w-full flex-col gap-2 rounded-2xl border border-border bg-card p-3 sm:max-w-xl sm:flex-row">
+    <form onSubmit={submit} className="flex w-full flex-col gap-2 border border-[#292f31] bg-[#101618] p-2 sm:max-w-xl sm:flex-row">
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder="Paste certificate ID or local-tampered/run_id"
-        className="min-w-0 flex-1 rounded-lg border border-border bg-secondary px-3 py-2 text-sm outline-none focus:border-primary"
+        className="min-w-0 flex-1 border border-[#292f31] bg-[#080f11] px-3 py-2 text-sm text-[#e7eaeb] outline-none placeholder:text-[#4d5558] focus:border-[#00d497]"
       />
-      <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+      <button className="wall-button wall-button-primary">
         <Search size={16} />
         Verify
       </button>

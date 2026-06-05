@@ -37,7 +37,7 @@ export type StoredRun = {
   certificate?: unknown;
 };
 
-const DEFAULT_STORAGE_DIR = path.join(/* turbopackIgnore: true*/ process.cwd(), "data", "runs");
+const DEFAULT_STORAGE_DIR = "/root/wallbox/data/runs";
 
 function storageDir() {
   const configured = process.env.WALLBOX_STORAGE_DIR;

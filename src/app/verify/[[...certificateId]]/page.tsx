@@ -13,11 +13,7 @@ async function appOrigin() {
 
 async function verify(id: string) {
   if (!id || id === "local-demo") {
-    return {
-      status: "CERTIFICATE_NOT_FOUND",
-      certificate_id: id,
-      error: "Run a demo agent first, then open its verifier link or paste a certificate ID.",
-    };
+    return { status: "CERTIFICATE_NOT_FOUND", certificate_id: id, error: "Run a demo agent first, then open its verifier link or paste a certificate ID." };
   }
   const res = await fetch(`${await appOrigin()}/api/verify/${id}`, { cache: "no-store" });
   return res.json();
@@ -28,26 +24,24 @@ export default async function VerifyPage({ params }: { params: Promise<{ certifi
   const data = await verify(id);
 
   return (
-    <main>
+    <main className="wall-shell">
       <Header />
-      <div className="mx-auto max-w-7xl px-5 py-12">
-        <div className="mb-8 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[.2em] text-primary">Public verifier</p>
-            <h1 className="mt-2 break-all text-3xl font-semibold">{id}</h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Paste a certificate ID to verify anchored hash vs recomputed capsule hash.
-            </p>
+      <section className="wall-section wall-grid-bg">
+        <div className="wall-container">
+          <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+            <div>
+              <p className="wall-kicker">Public verifier</p>
+              <h1 className="mt-3 max-w-4xl break-all text-4xl font-normal tracking-[-.045em] text-[#e7eaeb] md:text-6xl">{id}</h1>
+              <p className="wall-copy mt-4">Paste a certificate ID to verify anchored hash vs recomputed capsule hash.</p>
+            </div>
+            <div className="flex flex-col gap-3 lg:items-end">
+              <CertificateSearch initialValue={id} />
+              <Link className="wall-button wall-button-primary" href="/run">Run new demo</Link>
+            </div>
           </div>
-          <div className="flex flex-col gap-3 lg:items-end">
-            <CertificateSearch initialValue={id} />
-            <Link className="rounded-md bg-primary px-4 py-2 text-center font-semibold text-primary-foreground" href="/run">
-              Run new demo
-            </Link>
-          </div>
+          <VerificationCard data={data} />
         </div>
-        <VerificationCard data={data} />
-      </div>
+      </section>
     </main>
   );
 }
