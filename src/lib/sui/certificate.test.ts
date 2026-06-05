@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSuiCertificateObject } from "./certificate";
+import { parseSuiCertificateObject, parseSuiCreateCertificateResult } from "./certificate";
 
 describe("parseSuiCertificateObject", () => {
   it("extracts Wallbox fields from a Sui getObject content response", () => {
@@ -42,5 +42,49 @@ describe("parseSuiCertificateObject", () => {
     expect(() =>
       parseSuiCertificateObject({ data: { content: { fields: { id: { id: "0xcert" } } } } }, "0xcert"),
     ).toThrow(/missing run_id, agent_id, capsule_hash, walrus_blob_id/);
+  });
+
+  it("extracts certificate object ID and event fields from Sui CLI call output", () => {
+    const cert = parseSuiCreateCertificateResult(
+      {
+        digest: "tx_digest",
+        effects: { status: { status: "success" } },
+        objectChanges: [
+          {
+            type: "created",
+            objectType: "0xpackage::certificate::AgentRunCertificate",
+            objectId: "0xcert_object",
+          },
+        ],
+        events: [
+          {
+            parsedJson: {
+              certificate_id: "0xcert_object",
+              run_id: "run_live_001",
+              agent_id: "risklens-demo-agent",
+              capsule_hash: "0xhash",
+              walrus_blob_id: "local-walrus-blob",
+              schema_version: "wallbox.audit_capsule.v1",
+              created_at_ms: "1790000000000",
+            },
+          },
+        ],
+      },
+      {
+        runId: "fallback_run",
+        agentId: "fallback_agent",
+        capsuleHash: "0xfallback",
+        walrusBlobId: "fallback_blob",
+        schemaVersion: "wallbox.audit_capsule.v1",
+      },
+    );
+
+    expect(cert).toMatchObject({
+      certificateId: "0xcert_object",
+      txDigest: "tx_digest",
+      runId: "run_live_001",
+      capsuleHash: "0xhash",
+      mode: "sui-tatum",
+    });
   });
 });

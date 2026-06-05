@@ -11,6 +11,9 @@ function withEnv(env: Record<string, string | undefined>, fn: () => void) {
   vi.stubEnv("TATUM_SUI_RPC_URL", env.TATUM_SUI_RPC_URL);
   vi.stubEnv("SUI_PRIVATE_KEY", env.SUI_PRIVATE_KEY);
   vi.stubEnv("SUI_PACKAGE_ID", env.SUI_PACKAGE_ID);
+  for (const key of ["TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID"] as const) {
+    if (env[key] === undefined) vi.stubEnv(key, "");
+  }
   try {
     fn();
   } finally {

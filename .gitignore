@@ -6,3 +6,4 @@ node_modules
 *.log
 data/runs/*.json
 !.gitkeep
+move/**/build/

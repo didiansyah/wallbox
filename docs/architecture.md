@@ -27,7 +27,7 @@ Wallbox packages AI agent runs into verifiable audit capsules. The app is built 
 - Full integration: `WALLBOX_BLOB_STORE_MODE=walrus` + `WALLBOX_CERTIFICATE_MODE=sui-tatum`.
 - Mode B: real Walrus + local certificate fallback.
 - Mode C: local blob fallback + real Sui/Tatum certificate.
-- Current deployed demo: fully local fallback, clearly labeled in API/UI.
+- Current deployed demo: real Walrus testnet blob storage + real Sui/Tatum testnet certificate anchoring.
 
 ## Verification states
 
@@ -39,4 +39,4 @@ Wallbox packages AI agent runs into verifiable audit capsules. The app is built 
 
 ## Tatum/Sui status
 
-`src/lib/sui/certificate.ts` includes a real Sui object parser for Tatum `sui_getObject` responses. Certificate creation still requires deploying `move/wallbox` and wiring transaction signing with `SUI_PRIVATE_KEY` and `SUI_PACKAGE_ID`.
+`src/lib/sui/certificate.ts` includes a real Sui object parser for Tatum `sui_getObject` responses. Certificate creation calls the deployed `move/wallbox` package on Sui testnet through the Sui CLI signer and checks Tatum RPC readiness before writing.

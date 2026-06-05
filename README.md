@@ -8,8 +8,8 @@ Wallbox records every AI agent run as a tamper-evident audit capsule, stores the
 
 - Deterministic `RiskLens Demo Agent`
 - Canonical audit capsule builder with reproducible SHA-256 hashing
-- Local/Walrus blob store abstraction
-- Local/Sui-Tatum certificate abstraction
+- Local/Walrus blob store abstraction, with Walrus testnet active in production
+- Local/Sui-Tatum certificate abstraction, with Sui/Tatum testnet active in production
 - Sui Move certificate package scaffold in `move/wallbox`
 - Tatum `sui_getObject` certificate parser with tests
 - Public verification API and page
@@ -72,7 +72,7 @@ The intended certificate object lives in `move/wallbox`:
 - `Move.toml`
 - `sources/certificate.move`
 
-It defines `AgentRunCertificate` and `CertificateCreated`. Build/deploy requires the Sui CLI plus a funded testnet/devnet wallet; this VPS currently does not have `sui` installed.
+It defines `AgentRunCertificate` and `CertificateCreated`. The testnet package is deployed and production uses the Sui CLI signer to call `create_certificate`.
 
 ## API
 

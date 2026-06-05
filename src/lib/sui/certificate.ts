@@ -2,6 +2,11 @@ import { certificateMode } from "@/lib/config/env";
 import { findRunByCertificate } from "@/lib/storage/local-store";
 import { sha256CanonicalJson } from "@/lib/capsule/hash";
 import { tatumRpc } from "./tatum-client";
+import { execFile } from "child_process";
+import { promisify } from "util";
+
+const execFileAsync = promisify(execFile);
+const SUI_CLOCK_OBJECT_ID = "0x6";
 
 export type WallboxCertificate = {
   certificateId: string;
@@ -48,6 +53,72 @@ function objectIdFromFields(fields: SuiObjectFields, fallback: string) {
   if (typeof fields.id === "string") return fields.id;
   if (fields.id && typeof fields.id === "object" && typeof fields.id.id === "string") return fields.id.id;
   return fallback;
+}
+
+type SuiCliCallResult = {
+  digest?: string;
+  effects?: { status?: { status?: string; error?: string } };
+  objectChanges?: Array<{ type?: string; objectType?: string; objectId?: string }>;
+  events?: Array<{ parsedJson?: Record<string, unknown> }>;
+};
+
+export function parseSuiCreateCertificateResult(raw: SuiCliCallResult, fallback: Parameters<typeof createCertificate>[0]): WallboxCertificate {
+  const status = raw.effects?.status;
+  if (status?.status !== "success") throw new Error(`Sui certificate transaction failed: ${status?.error || "unknown status"}`);
+
+  const created = raw.objectChanges?.find(
+    (change) => change.type === "created" && change.objectType?.endsWith("::certificate::AgentRunCertificate"),
+  );
+  const event = raw.events?.find((item) => item.parsedJson?.certificate_id)?.parsedJson;
+  const certificateId = created?.objectId || asString(event?.certificate_id);
+  if (!certificateId) throw new Error("Sui certificate transaction succeeded but certificate object id was not found");
+
+  return {
+    certificateId,
+    txDigest: raw.digest || certificateId,
+    runId: asString(event?.run_id) || fallback.runId,
+    agentId: asString(event?.agent_id) || fallback.agentId,
+    capsuleHash: asString(event?.capsule_hash) || fallback.capsuleHash,
+    walrusBlobId: asString(event?.walrus_blob_id) || fallback.walrusBlobId,
+    schemaVersion: asString(event?.schema_version) || fallback.schemaVersion,
+    createdAtMs: asNumber(event?.created_at_ms) || Date.now(),
+    mode: "sui-tatum",
+    network: process.env.SUI_NETWORK || "testnet",
+    raw,
+  };
+}
+
+async function createSuiCertificateWithCli(input: Parameters<typeof createCertificate>[0]): Promise<WallboxCertificate> {
+  const packageId = process.env.SUI_PACKAGE_ID;
+  if (!packageId) throw new Error("SUI_PACKAGE_ID is required for sui-tatum certificate creation");
+
+  const suiBin = process.env.SUI_CLI_PATH || "/root/.local/bin/sui";
+  const { stdout } = await execFileAsync(
+    suiBin,
+    [
+      "client",
+      "call",
+      "--package",
+      packageId,
+      "--module",
+      process.env.SUI_CERTIFICATE_MODULE || "certificate",
+      "--function",
+      "create_certificate",
+      "--args",
+      input.runId,
+      input.agentId,
+      input.capsuleHash,
+      input.walrusBlobId,
+      input.schemaVersion,
+      SUI_CLOCK_OBJECT_ID,
+      "--gas-budget",
+      process.env.SUI_GAS_BUDGET || "50000000",
+      "--json",
+    ],
+    { timeout: 60_000, maxBuffer: 1024 * 1024 * 5 },
+  );
+
+  return parseSuiCreateCertificateResult(JSON.parse(stdout) as SuiCliCallResult, input);
 }
 
 export function parseSuiCertificateObject(raw: unknown, fallbackId = "unknown"): WallboxCertificate {
@@ -98,14 +169,12 @@ export async function createCertificate(input: {
   const createdAtMs = Date.now();
 
   if (mode === "sui-tatum") {
-    if (!process.env.SUI_PACKAGE_ID || !process.env.SUI_PRIVATE_KEY) {
-      throw new Error("SUI_PACKAGE_ID and SUI_PRIVATE_KEY are required for sui-tatum certificate creation");
+    if (!process.env.SUI_PACKAGE_ID) {
+      throw new Error("SUI_PACKAGE_ID is required for sui-tatum certificate creation");
     }
 
     await tatumRpc("sui_getTotalTransactionBlocks", []);
-    throw new Error(
-      "Sui transaction signing is not configured yet. Deploy move/wallbox and wire create_certificate signing, or set WALLBOX_CERTIFICATE_MODE=local for demo mode.",
-    );
+    return createSuiCertificateWithCli(input);
   }
 
   const seed = sha256CanonicalJson({ ...input, createdAtMs: input.runId });
