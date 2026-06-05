@@ -16,6 +16,7 @@ export function Header() {
         <nav className="wall-nav hidden items-center gap-7 text-[12px] uppercase tracking-[.12em] text-[#9aa2a5] lg:flex">
           <a className="transition hover:text-[#e7eaeb]" href="/#product">Product</a>
           <a className="transition hover:text-[#e7eaeb]" href="/#security">Security</a>
+          <Link className="transition hover:text-[#e7eaeb]" href="/demo">Demo</Link>
           <Link className="transition hover:text-[#e7eaeb]" href="/integrations">Integrations</Link>
           <Link className="transition hover:text-[#e7eaeb]" href="/runs">Runs</Link>
           <Link className="transition hover:text-[#e7eaeb]" href="/status">Status</Link>
@@ -23,7 +24,7 @@ export function Header() {
         </nav>
 
         <div className="flex gap-2">
-          <Link className="wall-button hidden sm:inline-flex" href="/verify/local-demo">Verify</Link>
+          <Link className="wall-button hidden sm:inline-flex" href="/demo">Judge demo</Link>
           <Link className="wall-button wall-button-primary" href="/run">
             <ShieldCheck size={15} /> Run demo
           </Link>

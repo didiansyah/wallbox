@@ -4,17 +4,29 @@ Verifiable flight recorder for autonomous AI agents.
 
 Wallbox records every AI agent run as a tamper-evident audit capsule, stores the evidence through a Walrus-compatible blob interface, and anchors verification certificates through a Sui/Tatum-compatible certificate interface.
 
+## Live demo
+
+- App: `https://wallbox.hanslabs.xyz`
+- Judge flow: `https://wallbox.hanslabs.xyz/demo`
+- Status: `https://wallbox.hanslabs.xyz/status`
+- Run history: `https://wallbox.hanslabs.xyz/runs`
+
 ## MVP shipped in this repo
 
 - Deterministic `RiskLens Demo Agent`
 - Canonical audit capsule builder with reproducible SHA-256 hashing
-- Local/Walrus blob store abstraction, with Walrus testnet active in production
-- Local/Sui-Tatum certificate abstraction, with Sui/Tatum testnet active in production
+- Walrus testnet blob storage in production, with local fallback mode
+- Sui/Tatum testnet certificate anchoring in production, with local fallback mode
 - Sui Move certificate package scaffold in `move/wallbox`
 - Tatum `sui_getObject` certificate parser with tests
 - Public verification API and page
+- `/demo` judge page showing latest verified run, Walrus blob, Sui object/tx, hash match, and tamper CTA
 - One-click tamper demo that changes local capsule evidence and shows `TAMPERED`
-- Cloudflare-inspired orange/cream/charcoal UI
+- SQLite run storage at `data/wallbox.sqlite`, with legacy JSON backup/export files in `data/runs/`
+- Admin console for project-scoped API keys: create project, generate key, rotate key, revoke key
+- TypeScript SDK in `packages/sdk`
+- MCP server in `packages/mcp-server`
+- Oxide-inspired dark infra console UI
 
 ## Quick start
 
@@ -28,18 +40,18 @@ Open `http://localhost:3070`.
 
 ## Demo flow
 
-1. Open `/run`.
-2. Click `Start run`.
-3. Wallbox creates a trace, builds an audit capsule, stores a blob reference, and creates a certificate reference.
-4. Open the returned verifier URL.
+1. Open `/demo` for the one-screen judge view, or `/run` to create a fresh run.
+2. Click `Run demo` / `Start run`.
+3. Wallbox creates a trace, builds an audit capsule, stores a Walrus blob, and creates a Sui/Tatum certificate.
+4. Open the verifier URL.
 5. The verifier compares the anchored capsule hash with the recomputed capsule hash.
-6. Click `Simulate tampering` in the UI, or call the tamper endpoint manually:
+6. Click `Simulate tampering` to open `/verify/local-tampered/<run_id>` and show `TAMPERED`.
+
+Manual tamper endpoint:
 
 ```bash
 curl -X POST http://localhost:3070/api/demo/tamper/<run_id>
 ```
-
-The status changes to `TAMPERED` and the changed file is highlighted.
 
 ## Modes
 
@@ -69,6 +81,42 @@ Mainnet is blocked unless `WALLBOX_ALLOW_MAINNET=true` is explicitly set after f
 
 Local mode is clearly labeled in API/UI responses. It uses the same data model and interfaces as the real integrations, but does not claim to be an on-chain certificate or real Walrus blob.
 
+## Storage
+
+Runtime storage is SQLite:
+
+```bash
+WALLBOX_SQLITE_PATH=data/wallbox.sqlite
+```
+
+On startup, Wallbox imports old `data/runs/*.json` records into SQLite and keeps JSON files as operational backup/export records.
+
+## Project-scoped API keys
+
+External agent capture is protected by API keys.
+
+Legacy env keys still work:
+
+```bash
+WALLBOX_API_KEY=wbx_default_secret
+WALLBOX_API_KEYS="agenthub=wbx_agenthub, meridian|Meridian Bot|wbx_meridian"
+```
+
+The admin console can also create SQLite-backed projects and keys at `/admin`:
+
+- create project
+- generate one-time key
+- rotate key
+- revoke key
+- view run counts per project
+
+External requests send either:
+
+```bash
+x-wallbox-api-key: <key>
+Authorization: Bearer <key>
+```
+
 ## Sui Move package
 
 The intended certificate object lives in `move/wallbox`:
@@ -80,10 +128,39 @@ It defines `AgentRunCertificate` and `CertificateCreated`. The testnet package i
 
 ## API
 
-- `POST /api/runs` — run deterministic demo agent, build/store/certify capsule
+- `POST /api/runs` — run deterministic demo agent or capture an external agent run
+- `GET /api/runs?limit=100` — list runs; scoped by project API key when provided
 - `GET /api/runs/:runId` — inspect run and capsule evidence
 - `GET /api/verify/:certificateId` — verify certificate and capsule integrity
 - `POST /api/demo/tamper/:runId` — modify local cached capsule for tamper demo
+- `POST /api/admin/projects` — admin-only project/key actions
+
+## SDK and MCP
+
+SDK:
+
+```ts
+import { WallboxClient } from "@wallbox/sdk";
+
+const wallbox = new WallboxClient({
+  baseUrl: "https://wallbox.hanslabs.xyz",
+  apiKey: process.env.WALLBOX_API_KEY!,
+});
+
+await wallbox.captureRun({ mode: "external", task, agent, trace, artifacts });
+```
+
+MCP server:
+
+```yaml
+mcp_servers:
+  wallbox:
+    command: "node"
+    args: ["/root/wallbox/packages/mcp-server/dist/index.js"]
+    env:
+      WALLBOX_BASE_URL: "https://wallbox.hanslabs.xyz"
+      WALLBOX_API_KEY: "wbx_project_key"
+```
 
 ## Verification model
 
