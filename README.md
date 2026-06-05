@@ -50,11 +50,13 @@ WALLBOX_BLOB_STORE_MODE=local
 WALLBOX_CERTIFICATE_MODE=local
 ```
 
-Production/hackathon integration targets:
+Production/hackathon integration targets stay on **testnet first**:
 
 ```bash
 WALLBOX_BLOB_STORE_MODE=walrus
 WALLBOX_CERTIFICATE_MODE=sui-tatum
+WALRUS_NETWORK=testnet
+SUI_NETWORK=testnet
 WALRUS_PUBLISHER_URL=
 WALRUS_AGGREGATOR_URL=
 TATUM_API_KEY=
@@ -62,6 +64,8 @@ TATUM_SUI_RPC_URL=
 SUI_PRIVATE_KEY=
 SUI_PACKAGE_ID=
 ```
+
+Mainnet is blocked unless `WALLBOX_ALLOW_MAINNET=true` is explicitly set after funds, monitoring, and operational ownership are ready.
 
 Local mode is clearly labeled in API/UI responses. It uses the same data model and interfaces as the real integrations, but does not claim to be an on-chain certificate or real Walrus blob.
 

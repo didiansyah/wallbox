@@ -37,7 +37,7 @@ export type StoredRun = {
   certificate?: unknown;
 };
 
-const DEFAULT_STORAGE_DIR = path.join(process.cwd(), "data", "runs");
+const DEFAULT_STORAGE_DIR = path.join(/* turbopackIgnore: true*/ process.cwd(), "data", "runs");
 
 function storageDir() {
   const configured = process.env.WALLBOX_STORAGE_DIR;
@@ -45,8 +45,8 @@ function storageDir() {
 
   // Runtime-only override for VPS deploys. Turbopack/NFT should not trace arbitrary env paths.
   return path.isAbsolute(configured)
-    ? path.normalize(/* turbopackIgnore: true */ configured)
-    : path.join(DEFAULT_STORAGE_DIR, /* turbopackIgnore: true */ configured);
+    ? path.normalize(/* turbopackIgnore: true*/ configured)
+    : path.join(DEFAULT_STORAGE_DIR, /* turbopackIgnore: true*/ configured);
 }
 
 function safeId(id: string) {

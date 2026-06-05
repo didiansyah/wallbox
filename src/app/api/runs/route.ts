@@ -9,7 +9,7 @@ import { createCertificate } from "@/lib/sui/certificate";
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const task = body.task || DEMO_TASK;
+    const task = typeof body.task === "string" && body.task.trim() ? body.task.trim().slice(0, 2_000) : DEMO_TASK;
     const runId = createRunId();
     const agentOutput = runDemoAgent(runId, task);
     const capsule = buildCapsule(agentOutput);

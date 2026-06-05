@@ -1,5 +1,5 @@
 import type { AuditCapsule } from "@/lib/capsule/schema";
-import { blobStoreMode } from "@/lib/config/env";
+import { blobStoreMode, assertTestnetFirst } from "@/lib/config/env";
 import { findRunByBlob } from "@/lib/storage/local-store";
 import { sha256CanonicalJson } from "@/lib/capsule/hash";
 
@@ -31,6 +31,8 @@ async function parseCapsuleResponse(res: Response): Promise<AuditCapsule> {
 export async function uploadCapsule(capsule: AuditCapsule): Promise<UploadResult> {
   const mode = blobStoreMode();
   if (mode === "walrus") {
+    const network = process.env.WALRUS_NETWORK || "testnet";
+    assertTestnetFirst(network, "Walrus");
     const publisher = process.env.WALRUS_PUBLISHER_URL;
     if (!publisher) throw new Error("WALRUS_PUBLISHER_URL is required for walrus mode");
     const res = await fetch(`${publisher.replace(/\/$/, "")}/v1/blobs`, {
@@ -43,7 +45,7 @@ export async function uploadCapsule(capsule: AuditCapsule): Promise<UploadResult
     return {
       blobId: parseWalrusUploadResponse(json, `walrus_${sha256CanonicalJson(capsule).slice(2, 18)}`),
       mode,
-      network: process.env.WALRUS_NETWORK || "testnet",
+      network,
     };
   }
 
@@ -63,6 +65,8 @@ export async function fetchCapsule(blobId: string): Promise<AuditCapsule> {
   }
 
   const aggregator = process.env.WALRUS_AGGREGATOR_URL;
+  const network = process.env.WALRUS_NETWORK || "testnet";
+  assertTestnetFirst(network, "Walrus");
   if (!aggregator) throw new Error("WALRUS_AGGREGATOR_URL is required to fetch Walrus blobs");
 
   let last = "";

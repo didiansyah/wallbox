@@ -1,4 +1,4 @@
-import { blobStoreMode, certificateMode } from "@/lib/config/env";
+import { blobStoreMode, certificateMode, isMainnetDisabled } from "@/lib/config/env";
 
 export type IntegrationStatus = {
   appUrl: string;
@@ -33,6 +33,11 @@ export function integrationStatus(): IntegrationStatus {
     certMode === "sui-tatum"
       ? missing(["TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID"])
       : [];
+  const suiNetwork = process.env.SUI_NETWORK || (certMode === "local" ? "local-demo" : "testnet");
+  const walrusNetwork = process.env.WALRUS_NETWORK || (blobMode === "local" ? "local-demo" : "testnet");
+  const mainnetBlocked = isMainnetDisabled(suiNetwork) || isMainnetDisabled(walrusNetwork);
+  if (blobMode === "walrus" && isMainnetDisabled(walrusNetwork)) blobMissing.push("WALLBOX_ALLOW_MAINNET=true");
+  if (certMode === "sui-tatum" && isMainnetDisabled(suiNetwork)) certMissing.push("WALLBOX_ALLOW_MAINNET=true");
   const tatumRpcConfigured = missing(["TATUM_API_KEY", "TATUM_SUI_RPC_URL"]).length === 0;
   const signerConfigured = missing(["SUI_PRIVATE_KEY"]).length === 0;
   const packageConfigured = missing(["SUI_PACKAGE_ID"]).length === 0;
@@ -42,18 +47,19 @@ export function integrationStatus(): IntegrationStatus {
   if (certMode === "local") warnings.push("Certificate anchoring is running in local fallback mode, not live Sui/Tatum.");
   if (blobMissing.length) warnings.push(`Walrus mode is selected but missing: ${blobMissing.join(", ")}.`);
   if (certMissing.length) warnings.push(`Sui/Tatum mode is selected but missing: ${certMissing.join(", ")}.`);
+  if (mainnetBlocked) warnings.push("Mainnet is disabled by default. Use testnet for production demo until mainnet funds/ops are ready.");
 
   return {
     appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3070",
     blob: {
       mode: blobMode,
-      network: process.env.WALRUS_NETWORK || (blobMode === "local" ? "local-demo" : "testnet"),
+      network: walrusNetwork,
       ready: blobMissing.length === 0,
       missing: blobMissing,
     },
     certificate: {
       mode: certMode,
-      network: process.env.SUI_NETWORK || (certMode === "local" ? "local-demo" : "testnet"),
+      network: suiNetwork,
       ready: certMissing.length === 0,
       missing: certMissing,
       tatumRpcConfigured,

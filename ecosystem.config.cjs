@@ -16,6 +16,7 @@ module.exports = {
         WALRUS_AGGREGATOR_URL: process.env.WALRUS_AGGREGATOR_URL,
         SUI_NETWORK: 'testnet',
         WALRUS_NETWORK: 'testnet',
+        WALLBOX_ALLOW_MAINNET: 'false',
         TATUM_API_KEY: process.env.TATUM_API_KEY,
         TATUM_SUI_RPC_URL: process.env.TATUM_SUI_RPC_URL,
         SUI_PRIVATE_KEY: process.env.SUI_PRIVATE_KEY,

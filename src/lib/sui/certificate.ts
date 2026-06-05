@@ -1,4 +1,4 @@
-import { certificateMode } from "@/lib/config/env";
+import { certificateMode, assertTestnetFirst } from "@/lib/config/env";
 import { findRunByCertificate } from "@/lib/storage/local-store";
 import { sha256CanonicalJson } from "@/lib/capsule/hash";
 import { tatumRpc } from "./tatum-client";
@@ -169,6 +169,7 @@ export async function createCertificate(input: {
   const createdAtMs = Date.now();
 
   if (mode === "sui-tatum") {
+    assertTestnetFirst(process.env.SUI_NETWORK || "testnet", "Sui/Tatum");
     if (!process.env.SUI_PACKAGE_ID) {
       throw new Error("SUI_PACKAGE_ID is required for sui-tatum certificate creation");
     }
@@ -196,6 +197,7 @@ export async function readCertificate(certificateId: string): Promise<WallboxCer
   }
 
   if (certificateMode() === "sui-tatum" && !certificateId.startsWith("local-sui-")) {
+    assertTestnetFirst(process.env.SUI_NETWORK || "testnet", "Sui/Tatum");
     const raw = await tatumRpc("sui_getObject", [certificateId, { showContent: true }]);
     return parseSuiCertificateObject(raw, certificateId);
   }

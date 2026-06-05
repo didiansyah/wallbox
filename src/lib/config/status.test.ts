@@ -11,7 +11,10 @@ function withEnv(env: Record<string, string | undefined>, fn: () => void) {
   vi.stubEnv("TATUM_SUI_RPC_URL", env.TATUM_SUI_RPC_URL);
   vi.stubEnv("SUI_PRIVATE_KEY", env.SUI_PRIVATE_KEY);
   vi.stubEnv("SUI_PACKAGE_ID", env.SUI_PACKAGE_ID);
-  for (const key of ["TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID"] as const) {
+  vi.stubEnv("SUI_NETWORK", env.SUI_NETWORK);
+  vi.stubEnv("WALRUS_NETWORK", env.WALRUS_NETWORK);
+  vi.stubEnv("WALLBOX_ALLOW_MAINNET", env.WALLBOX_ALLOW_MAINNET);
+  for (const key of ["TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID", "SUI_NETWORK", "WALRUS_NETWORK", "WALLBOX_ALLOW_MAINNET"] as const) {
     if (env[key] === undefined) vi.stubEnv(key, "");
   }
   try {
@@ -63,5 +66,30 @@ describe("integrationStatus", () => {
       expect(status.certificate.ready).toBe(false);
       expect(status.certificate.missing).toEqual(["TATUM_API_KEY", "TATUM_SUI_RPC_URL", "SUI_PRIVATE_KEY", "SUI_PACKAGE_ID"]);
     });
+  });
+
+  it("keeps live integrations testnet-first unless mainnet is explicitly allowed", () => {
+    withEnv(
+      {
+        WALLBOX_BLOB_STORE_MODE: "walrus",
+        WALLBOX_CERTIFICATE_MODE: "sui-tatum",
+        WALRUS_PUBLISHER_URL: "https://publisher.example",
+        WALRUS_AGGREGATOR_URL: "https://aggregator.example",
+        TATUM_API_KEY: "test-key",
+        TATUM_SUI_RPC_URL: "https://example.test",
+        SUI_PRIVATE_KEY: "suiprivkey_test",
+        SUI_PACKAGE_ID: "0x123",
+        SUI_NETWORK: "mainnet",
+        WALRUS_NETWORK: "mainnet",
+      },
+      () => {
+        const status = integrationStatus();
+        expect(status.blob.ready).toBe(false);
+        expect(status.certificate.ready).toBe(false);
+        expect(status.blob.missing).toContain("WALLBOX_ALLOW_MAINNET=true");
+        expect(status.certificate.missing).toContain("WALLBOX_ALLOW_MAINNET=true");
+        expect(status.warnings).toContain("Mainnet is disabled by default. Use testnet for production demo until mainnet funds/ops are ready.");
+      },
+    );
   });
 });
