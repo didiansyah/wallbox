@@ -76,7 +76,7 @@ Do not say:
 
 ## Submission assets
 
-- [ ] GitHub repo URL
+- [x] GitHub repo URL: `https://github.com/didiansyah/wallbox`
 - [x] Live URL: `https://wallbox.hanslabs.xyz`
 - [x] Judge URL: `https://wallbox.hanslabs.xyz/demo`
 - [ ] 2–3 minute video URL
