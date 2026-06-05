@@ -3,10 +3,17 @@ import { buildCapsule, buildCapsuleFromPayload } from "@/lib/capsule/build-capsu
 import { sha256String } from "@/lib/capsule/hash";
 import { createRunId, DEMO_TASK, runDemoAgent } from "@/lib/agent/demo-agent";
 import { ExternalRunSchema, externalRunToPayload } from "@/lib/agent/external-run";
-import { saveRun } from "@/lib/storage/local-store";
+import { listRuns, saveRun } from "@/lib/storage/local-store";
 import { uploadCapsule } from "@/lib/walrus/client";
 import { createCertificate } from "@/lib/sui/certificate";
 import { externalApiAuthErrorMessage, isWallboxApiAuthorized } from "@/lib/config/api-auth";
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const limit = Number(url.searchParams.get("limit") || "100");
+  const runs = await listRuns(Number.isFinite(limit) ? limit : 100);
+  return NextResponse.json({ runs, count: runs.length });
+}
 
 export async function POST(request: Request) {
   try {

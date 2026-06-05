@@ -13,6 +13,7 @@ export function Footer() {
         <div className="flex flex-wrap gap-3 lg:justify-end">
           <Link href="/run" className="wall-button wall-button-primary">Run demo</Link>
           <Link href="/integrations" className="wall-button">Integrations</Link>
+          <Link href="/runs" className="wall-button">Runs</Link>
           <Link href="/status" className="wall-button">Status</Link>
           <Link href="/verify/local-demo" className="wall-button">Verify</Link>
         </div>

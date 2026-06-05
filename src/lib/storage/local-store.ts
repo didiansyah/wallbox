@@ -76,6 +76,26 @@ export async function loadRun(runId: string): Promise<StoredRun | null> {
   }
 }
 
+export async function listRuns(limit = 100): Promise<WallboxRun[]> {
+  await ensureDir();
+  const files = await fs.readdir(storageDir());
+  const runs: WallboxRun[] = [];
+
+  for (const file of files) {
+    if (!file.endsWith(".json")) continue;
+    try {
+      const record = JSON.parse(await fs.readFile(path.join(storageDir(), file), "utf8")) as StoredRun;
+      if (record.run?.runId) runs.push(record.run);
+    } catch {
+      // Ignore malformed local records so the dashboard still loads.
+    }
+  }
+
+  return runs
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+    .slice(0, Math.max(1, Math.min(limit, 500)));
+}
+
 export async function findRunByCertificate(certificateId: string): Promise<StoredRun | null> {
   await ensureDir();
   const files = await fs.readdir(storageDir());

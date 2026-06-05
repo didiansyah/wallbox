@@ -17,6 +17,7 @@ export function Header() {
           <a className="transition hover:text-[#e7eaeb]" href="/#product">Product</a>
           <a className="transition hover:text-[#e7eaeb]" href="/#security">Security</a>
           <Link className="transition hover:text-[#e7eaeb]" href="/integrations">Integrations</Link>
+          <Link className="transition hover:text-[#e7eaeb]" href="/runs">Runs</Link>
           <Link className="transition hover:text-[#e7eaeb]" href="/status">Status</Link>
           <a className="transition hover:text-[#e7eaeb]" href="/#use-cases">Use cases</a>
         </nav>
