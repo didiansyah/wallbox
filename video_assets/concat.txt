@@ -1,0 +1,17 @@
+file '/root/wallbox/video_assets/slide_01.png'
+duration 21
+file '/root/wallbox/video_assets/slide_02.png'
+duration 20
+file '/root/wallbox/video_assets/slide_03.png'
+duration 21
+file '/root/wallbox/video_assets/slide_04.png'
+duration 20
+file '/root/wallbox/video_assets/slide_05.png'
+duration 21
+file '/root/wallbox/video_assets/slide_06.png'
+duration 22
+file '/root/wallbox/video_assets/slide_07.png'
+duration 20
+file '/root/wallbox/video_assets/slide_08.png'
+duration 21
+file '/root/wallbox/video_assets/slide_08.png'

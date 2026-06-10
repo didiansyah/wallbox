@@ -1,0 +1,17 @@
+file '/root/wallbox/video_assets_vertical/vslide_01.png'
+duration 21
+file '/root/wallbox/video_assets_vertical/vslide_02.png'
+duration 20
+file '/root/wallbox/video_assets_vertical/vslide_03.png'
+duration 21
+file '/root/wallbox/video_assets_vertical/vslide_04.png'
+duration 20
+file '/root/wallbox/video_assets_vertical/vslide_05.png'
+duration 21
+file '/root/wallbox/video_assets_vertical/vslide_06.png'
+duration 22
+file '/root/wallbox/video_assets_vertical/vslide_07.png'
+duration 20
+file '/root/wallbox/video_assets_vertical/vslide_08.png'
+duration 21
+file '/root/wallbox/video_assets_vertical/vslide_08.png'
